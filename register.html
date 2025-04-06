@@ -3,25 +3,48 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Bloomday | Login</title>
+    <title>Bloomday | Sign Up</title>
     <link rel="stylesheet" href="css/root.css" />
     <link rel="stylesheet" href="css/fonts.css" />
-    <link rel="stylesheet" href="css/login.css" />
+    <link rel="stylesheet" href="css/register.css" />
     <link rel="stylesheet" href="css/normalize.css" />
   </head>
   <body>
     <div class="decorative-element"></div>
+    <div class="flower-decoration"></div>
 
-    <div class="login-container">
+    <div class="register-container">
       <div class="logo-container">
         <div class="logo">Bloomday</div>
         <div class="tagline">Create. Invite. Celebrate.</div>
       </div>
 
       <div class="form-container">
-        <h1>Welcome back</h1>
+        <h1>Create your account</h1>
 
         <form>
+          <div class="name-fields">
+            <div class="form-group">
+              <label for="first-name">First name</label>
+              <input
+                type="text"
+                id="first-name"
+                placeholder="First name"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="last-name">Last name</label>
+              <input
+                type="text"
+                id="last-name"
+                placeholder="Last name"
+                required
+              />
+            </div>
+          </div>
+
           <div class="form-group">
             <label for="email">Email</label>
             <input
@@ -37,15 +60,30 @@
             <input
               type="password"
               id="password"
-              placeholder="••••••••"
+              placeholder="8+ characters"
               required
             />
-            <div class="forgot-password">
-              <a href="#">Forgot password?</a>
-            </div>
           </div>
 
-          <button type="submit">Log in</button>
+          <div class="form-group">
+            <label for="confirm-password">Confirm password</label>
+            <input
+              type="password"
+              id="confirm-password"
+              placeholder="Re-enter password"
+              required
+            />
+          </div>
+
+          <div class="terms">
+            <input type="checkbox" id="terms" required />
+            <label for="terms">
+              I agree to Bloomday's <a href="#">Terms of Service</a>,
+              <a href="#">Privacy Policy</a>, and <a href="#">Cookie Policy</a>.
+            </label>
+          </div>
+
+          <button type="submit">Create account</button>
         </form>
 
         <div class="divider">or</div>
@@ -106,8 +144,8 @@
         </div>
       </div>
 
-      <div class="signup-prompt">
-        Don't have an account? <a href="register.html">Sign up</a>
+      <div class="login-prompt">
+        Already have an account? <a href="#">Log in</a>
       </div>
     </div>
   </body>
