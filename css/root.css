@@ -1,9 +1,16 @@
 :root {
   --primary: #6b46c1;
   --primary-light: #9f7aea;
+  --primary-dark: #553c9a;
   --secondary: #ff9500;
+  --secondary-light: #ffae33;
   --dark: #1a202c;
   --light: #f7fafc;
   --error: #e53e3e;
   --success: #48bb78;
+  --gray-100: #f7fafc;
+  --gray-200: #edf2f7;
+  --gray-300: #e2e8f0;
+  --gray-400: #cbd5e0;
+  --gray-500: #a0aec0;
 }
