@@ -28,6 +28,18 @@ const Navbar: React.FC<NavbarProps> = ({ setCurrentPage }) => (
           >
             Past Events
           </button>
+          <button 
+            onClick={() => setCurrentPage('login')}
+            className="text-gray-700 hover:text-purple-600 transition-colors"
+          >
+            Login
+          </button>
+          <button 
+            onClick={() => setCurrentPage('register')}
+            className="text-gray-700 hover:text-purple-600 transition-colors"
+          >
+            Register
+          </button>
         </div>
         <button 
           onClick={() => setCurrentPage('create')}

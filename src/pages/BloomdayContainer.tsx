@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import Navbar from '../components/layout/Navbar';
 import MobileNav from '../components/layout/MobileNav';
 import BackButton from '../components/layout/BackButton';
 import HomePage from './HomePage';
@@ -7,6 +6,7 @@ import CreateEventPage from './CreateEventPage';
 import BrowseEventsPage from './BrowseEventsPage';
 import PastEventsPage from './PastEventsPage';
 import EventDetailsPage from './EventDetailsPage';
+import AuthPage from './AuthPage';
 
 interface Event {
   id: number;
@@ -30,7 +30,8 @@ interface DateRange {
 const eventTypes = ['Wedding', 'Birthday', 'Get Together', 'House Party', 'Festival', 'Conference', 'Workshop'];
 
 const BloomdayContainer: React.FC = () => {
-  const [currentPage, setCurrentPage] = useState<string>('home');
+  const [currentPage, setCurrentPage] = useState<string>('login');
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [events, setEvents] = useState<Event[]>([
     {
       id: 1,
@@ -125,20 +126,23 @@ const BloomdayContainer: React.FC = () => {
   const pastEvents = events.filter(event => event.isPast);
 
   const renderPage = () => {
-    if (currentPage === 'home') return <HomePage upcomingEvents={upcomingEvents} setCurrentPage={setCurrentPage} />;
-    if (currentPage === 'create') return <CreateEventPage newEvent={newEvent} setNewEvent={setNewEvent} handleCreateEvent={handleCreateEvent} eventTypes={eventTypes} />;
-    if (currentPage === 'browse') return <BrowseEventsPage filteredEvents={filteredEvents} searchQuery={searchQuery} setSearchQuery={setSearchQuery} selectedFilters={selectedFilters} setSelectedFilters={setSelectedFilters} eventTypes={eventTypes} setCurrentPage={setCurrentPage} />;
-    if (currentPage === 'past') return <PastEventsPage pastEvents={pastEvents} setCurrentPage={setCurrentPage} />;
+    const pageProps = { theme, setCurrentPage };
+    if (currentPage === 'home') return <HomePage {...pageProps} upcomingEvents={upcomingEvents} />;
+    if (currentPage === 'create') return <CreateEventPage {...pageProps} newEvent={newEvent} setNewEvent={setNewEvent} handleCreateEvent={handleCreateEvent} eventTypes={eventTypes} />;
+    if (currentPage === 'browse') return <BrowseEventsPage {...pageProps} filteredEvents={filteredEvents} searchQuery={searchQuery} setSearchQuery={setSearchQuery} selectedFilters={selectedFilters} setSelectedFilters={setSelectedFilters} eventTypes={eventTypes} />;
+    if (currentPage === 'past') return <PastEventsPage {...pageProps} pastEvents={pastEvents} />;
+    if (currentPage === 'login') return <AuthPage {...pageProps} />;
+    if (currentPage === 'register') return <AuthPage {...pageProps} />;
     if (currentPage.startsWith('event-')) {
       const eventId = currentPage.replace('event-', '');
       const event = events.find(e => e.id === parseInt(eventId));
-      return <EventDetailsPage event={event} />;
+      return <EventDetailsPage {...pageProps} event={event} />;
     }
-    return <HomePage upcomingEvents={upcomingEvents} setCurrentPage={setCurrentPage} />;
+    return <HomePage {...pageProps} upcomingEvents={upcomingEvents} />;
   };
 
   return (
-    <div className="min-h-screen bg-[#14191f]">
+    <div className={theme === 'dark' ? 'min-h-screen bg-[#14191f]' : 'min-h-screen bg-white'}>
       <style>{`
         .line-clamp-2 {
           display: -webkit-box;
@@ -156,12 +160,11 @@ const BloomdayContainer: React.FC = () => {
           .pb-20 { padding-bottom: 5rem; }
         }
       `}</style>
-      {/* <Navbar setCurrentPage={setCurrentPage} /> */}
-      {currentPage !== 'home' && <BackButton setCurrentPage={setCurrentPage} />}
+      {(currentPage !== 'home' && currentPage !== 'login' && currentPage !== 'register') && <BackButton setCurrentPage={setCurrentPage} />}
       <div className="pb-20 md:pb-0">
         {renderPage()}
       </div>
-      <MobileNav currentPage={currentPage} setCurrentPage={setCurrentPage} />
+      {(currentPage !== 'login' && currentPage !== 'register') && <MobileNav currentPage={currentPage} setCurrentPage={setCurrentPage} />}
     </div>
   );
 };

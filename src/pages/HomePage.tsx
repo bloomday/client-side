@@ -7,7 +7,7 @@ interface HomePageProps {
 }
 
 const HomePage: React.FC<HomePageProps> = ({ upcomingEvents, setCurrentPage }) => (
-  <div className="min-h-screen bg-[#14191f] flex flex-col justify-between overflow-x-hidden">
+  <div className="min-h-screen bg-[#14191f] flex flex-col justify-between max-w-screen-lg mx-auto">
     {/* Header */}
     <div className="flex items-center bg-[#14191f] p-4 pb-2 justify-between">
       <h2 className="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pl-12">Bloomday</h2>
@@ -38,34 +38,32 @@ const HomePage: React.FC<HomePageProps> = ({ upcomingEvents, setCurrentPage }) =
 
     {/* Upcoming Events Section */}
     <h2 className="text-white text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Upcoming Events</h2>
-    <div className="flex overflow-y-auto [-ms-scrollbar-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-      <div className="flex items-stretch p-4 gap-3">
-        {upcomingEvents.length > 0 ? (
-          upcomingEvents.map(event => (
-            <div className="flex h-full flex-1 flex-col gap-4 rounded-lg min-w-60 bg-[#1f262e] border border-[#3d4c5c] p-4" key={event.id}>
-              <div
-                className="w-full bg-center bg-no-repeat aspect-video bg-cover rounded-xl flex flex-col"
-                style={{ backgroundImage: `url('${event.image}')` }}
-              ></div>
-              <div>
-                <p className="text-white text-base font-medium leading-normal">{event.name}</p>
-                <p className="text-[#9dadbe] text-sm font-normal leading-normal">{event.date} at {event.time}</p>
-                <p className="text-[#9dadbe] text-xs font-normal leading-normal mt-1">{event.location}</p>
-              </div>
+    <div className="flex flex-wrap items-stretch p-4 gap-3">
+      {upcomingEvents.length > 0 ? (
+        upcomingEvents.map(event => (
+          <div className="flex h-full flex-1 flex-col gap-4 rounded-lg min-w-60 bg-[#1f262e] border border-[#3d4c5c] p-4" key={event.id}>
+            <div
+              className="w-full bg-center bg-no-repeat aspect-video bg-cover rounded-xl flex flex-col"
+              style={{ backgroundImage: `url('${event.image}')` }}
+            ></div>
+            <div>
+              <p className="text-white text-base font-medium leading-normal">{event.name}</p>
+              <p className="text-[#9dadbe] text-sm font-normal leading-normal">{event.date} at {event.time}</p>
+              <p className="text-[#9dadbe] text-xs font-normal leading-normal mt-1">{event.location}</p>
             </div>
-          ))
-        ) : (
-          <div className="text-center py-12">
-            <p className="text-[#9dadbe] text-lg">No upcoming events yet.</p>
-            <button 
-              onClick={() => setCurrentPage('create')}
-              className="mt-4 bg-[#dce7f3] text-[#14191f] px-6 py-3 rounded-lg font-bold hover:bg-[#b5c9e3] transition-colors"
-            >
-              Create New Event
-            </button>
           </div>
-        )}
-      </div>
+        ))
+      ) : (
+        <div className="text-center py-12 w-full">
+          <p className="text-[#9dadbe] text-lg">No upcoming events yet.</p>
+          <button 
+            onClick={() => setCurrentPage('create')}
+            className="mt-4 bg-[#dce7f3] text-[#14191f] px-6 py-3 rounded-lg font-bold hover:bg-[#b5c9e3] transition-colors"
+          >
+            Create New Event
+          </button>
+        </div>
+      )}
     </div>
 
     {/* Quick Links Section */}
