@@ -1,26 +1,82 @@
 import React, { useState } from 'react';
+import FlashMessage from '../components/FlashMessage';
 
 interface LoginPageProps {
   setCurrentPage: (page: string) => void;
 }
 
+const MOCK_LOGIN_SUCCESS = true; // Set to true to mock a successful login response
+
 const LoginPage: React.FC<LoginPageProps> = ({ setCurrentPage }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [flashMessage, setFlashMessage] = useState<string | null>(null);
+  const [flashMessageType, setFlashMessageType] = useState<'success' | 'error' | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleCloseFlash = () => {
+    setFlashMessage(null);
+    setFlashMessageType(null);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle login logic here
-    console.log('Login attempt:', { email, password });
-    setCurrentPage('home'); // Redirect to home after login attempt
+    setFlashMessage(null);
+    setFlashMessageType(null);
+    setIsLoading(true);
+
+    try {
+      let data;
+      if (MOCK_LOGIN_SUCCESS) {
+        // Mock successful login response
+        data = {
+          user: {
+            _id: "mockUserId",
+            name: "Mock User",
+            email: "mock@example.com",
+            provider: "local",
+            isVerified: true,
+          },
+          token: "mockJWTToken",
+        };
+        await new Promise(resolve => setTimeout(resolve, 500)); // Simulate network delay
+      } else {
+        const response = await fetch('https://bloomday-server-side.onrender.com/signin', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email, password }),
+        });
+        data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.message || "Login failed");
+        }
+      }
+
+      localStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.setItem('token', data.token);
+      setFlashMessage("Login successful!");
+      setFlashMessageType('success');
+      setTimeout(() => {
+        setCurrentPage('home');
+      }, 1500);
+    } catch (error: any) {
+      console.error('Login error:', error);
+      setFlashMessage(error.message || "Network error. Please try again later.");
+      setFlashMessageType('error');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const inputClasses = `w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-[#1f262e] border-[#3d4c5c] text-white`;
   const buttonClasses = `w-full py-3 px-6 rounded-lg font-semibold transition-all transform hover:scale-105 mt-4 bg-gradient-to-r from-purple-600 to-teal-600 text-white hover:from-purple-700 hover:to-teal-700`;
-  const socialButtonClasses = `flex items-center justify-center w-full py-3 px-6 rounded-lg font-semibold transition-all transform hover:scale-105 border border-[#3d4c5c] text-white bg-[#1f262e] hover:bg-[#23272f]`;
+  const socialButtonClasses = `flex items-center justify-center w-full py-3 px-6 rounded-lg font-semibold transition-all transform hover:scale-105 border border-[#3d4c5c] bg-[#dce7f3] text-[#14191f] hover:bg-[#b5c9e3]`;
 
   return (
-    <div className={`min-h-screen bg-[#14191f] py-8 px-4 flex items-center justify-center`}>
+    <div className="min-h-screen bg-[#14191f] py-8 px-4 flex flex-col items-center justify-center">
+      <h2 className="text-white text-lg font-bold leading-tight tracking-[-0.015em] mb-8">Bloomday</h2>
       <div className={`max-w-md w-full rounded-lg shadow-md p-6 bg-[#1f262e]`}>
         <h1 className={`text-3xl font-bold mb-8 text-center text-white`}>Login</h1>
         
@@ -47,26 +103,45 @@ const LoginPage: React.FC<LoginPageProps> = ({ setCurrentPage }) => {
               className={inputClasses}
             />
           </div>
-          <button type="submit" className={buttonClasses}>Log In</button>
+          <button type="submit" className={buttonClasses} disabled={isLoading}>
+            {isLoading ? (
+              <svg className="animate-spin h-5 w-5 text-white mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            ) : (
+              'Log In'
+            )}
+          </button>
         </form>
+
+        <FlashMessage message={flashMessage} type={flashMessageType} onClose={handleCloseFlash} />
 
         <div className="mt-8 text-center">
           <p className={`text-sm text-[#9dadbe]`}>Or log in with:</p>
           <div className="mt-4 space-y-3">
-            <button className={socialButtonClasses}>
-              <img src="https://www.svgrepo.com/show/506497/google.svg" alt="Google" className="w-5 h-5 mr-3" />
+            <button className={socialButtonClasses} disabled={isLoading}>
+              <img src="/icons/google.svg" alt="Google" className="w-5 h-5 mr-3" />
               Sign in with Google
             </button>
-            <button className={socialButtonClasses}>
-              <img src="https://www.svgrepo.com/show/506471/facebook.svg" alt="Facebook" className="w-5 h-5 mr-3" />
+            <button className={socialButtonClasses} disabled={isLoading}>
+              <img src="/icons/facebook.svg" alt="Facebook" className="w-5 h-5 mr-3" />
               Sign in with Facebook
             </button>
           </div>
         </div>
 
-        {/* <p className={`mt-6 text-center text-sm ${theme === 'dark' ? 'text-[#9dadbe]' : 'text-gray-600'}`}>
-          Don't have an account? <button onClick={() => setCurrentPage('register')} className="font-semibold text-purple-500 hover:underline">Sign Up</button>
-        </p> */}
+        <div className="mt-6 text-center">
+          <button onClick={() => setCurrentPage('forgot-password')} className="font-semibold text-purple-500 hover:underline" disabled={isLoading}>
+            Forgot password?
+          </button>
+        </div>
+
+        <p className={`mt-6 text-center text-sm text-[#9dadbe]`}>
+          Don't have an account? <button onClick={() => setCurrentPage('register')} className="font-semibold text-purple-500 hover:underline" disabled={isLoading}>
+            Sign Up
+          </button>
+        </p>
       </div>
     </div>
   );

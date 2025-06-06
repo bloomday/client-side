@@ -6,7 +6,10 @@ import CreateEventPage from './CreateEventPage';
 import BrowseEventsPage from './BrowseEventsPage';
 import PastEventsPage from './PastEventsPage';
 import EventDetailsPage from './EventDetailsPage';
-import AuthPage from './AuthPage';
+import LoginPage from './LoginPage';
+import RegisterPage from './RegisterPage';
+import ForgotPasswordPage from './ForgotPasswordPage';
+import ResetPasswordPage from './ResetPasswordPage';
 
 interface Event {
   id: number;
@@ -79,39 +82,6 @@ const BloomdayContainer: React.FC = () => {
     dateRange: { start: '', end: '' }
   });
 
-  const [newEvent, setNewEvent] = useState<Omit<Event, 'id' | 'host' | 'attendees' | 'isPast'>>({
-    name: '',
-    date: '',
-    time: '',
-    location: '',
-    type: '',
-    description: '',
-    image: ''
-  });
-
-  const handleCreateEvent = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const event: Event = {
-      ...newEvent,
-      id: Date.now(),
-      host: 'You',
-      attendees: 0,
-      isPast: false,
-      image: newEvent.image || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400&h=200&fit=crop'
-    };
-    setEvents([...events, event]);
-    setNewEvent({
-      name: '',
-      date: '',
-      time: '',
-      location: '',
-      type: '',
-      description: '',
-      image: ''
-    });
-    setCurrentPage('home');
-  };
-
   const filteredEvents = events.filter(event => {
     const matchesSearch = event.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       event.description.toLowerCase().includes(searchQuery.toLowerCase());
@@ -127,11 +97,16 @@ const BloomdayContainer: React.FC = () => {
   const renderPage = () => {
     const pageProps = { setCurrentPage };
     if (currentPage === 'home') return <HomePage {...pageProps} upcomingEvents={upcomingEvents} />;
-    if (currentPage === 'create') return <CreateEventPage {...pageProps} newEvent={newEvent} setNewEvent={setNewEvent} handleCreateEvent={handleCreateEvent} eventTypes={eventTypes} />;
+    if (currentPage === 'create') return <CreateEventPage {...pageProps} eventTypes={eventTypes} />;
     if (currentPage === 'browse') return <BrowseEventsPage {...pageProps} filteredEvents={filteredEvents} searchQuery={searchQuery} setSearchQuery={setSearchQuery} selectedFilters={selectedFilters} setSelectedFilters={setSelectedFilters} eventTypes={eventTypes} />;
     if (currentPage === 'past') return <PastEventsPage {...pageProps} pastEvents={pastEvents} />;
-    if (currentPage === 'login') return <AuthPage {...pageProps} />;
-    if (currentPage === 'register') return <AuthPage {...pageProps} />;
+    if (currentPage === 'login') return <LoginPage {...pageProps} />;
+    if (currentPage === 'register') return <RegisterPage {...pageProps} />;
+    if (currentPage === 'forgot-password') return <ForgotPasswordPage {...pageProps} />;
+    if (currentPage.startsWith('reset-password/')) {
+      const token = currentPage.split('/')[1];
+      return <ResetPasswordPage setCurrentPage={setCurrentPage} token={token} />;
+    }
     if (currentPage.startsWith('event-')) {
       const eventId = currentPage.replace('event-', '');
       const event = events.find(e => e.id === parseInt(eventId));
@@ -159,11 +134,11 @@ const BloomdayContainer: React.FC = () => {
           .pb-20 { padding-bottom: 5rem; }
         }
       `}</style>
-      {(currentPage !== 'home' && currentPage !== 'login' && currentPage !== 'register') && <BackButton setCurrentPage={setCurrentPage} />}
+      {(currentPage !== 'home' && currentPage !== 'login' && currentPage !== 'register' && !currentPage.startsWith('reset-password/') && currentPage !== 'forgot-password') && <BackButton setCurrentPage={setCurrentPage} />}
       <div className="pb-20 md:pb-0">
         {renderPage()}
       </div>
-      {(currentPage !== 'login' && currentPage !== 'register') && <MobileNav currentPage={currentPage} setCurrentPage={setCurrentPage} />}
+      {(currentPage !== 'login' && currentPage !== 'register' && !currentPage.startsWith('reset-password/') && currentPage !== 'forgot-password') && <MobileNav currentPage={currentPage} setCurrentPage={setCurrentPage} />}
     </div>
   );
 };
