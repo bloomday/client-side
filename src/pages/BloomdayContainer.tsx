@@ -34,7 +34,14 @@ const eventTypes = ['Wedding', 'Birthday', 'Get Together', 'House Party', 'Festi
 
 const BloomdayContainer: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<string>('login');
-  const [events, setEvents] = useState<Event[]>([
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [selectedFilters, setSelectedFilters] = useState<{ type: string; dateRange: DateRange }>({
+    type: '',
+    dateRange: { start: '', end: '' }
+  });
+
+  // Dummy data for upcoming and past events (will be replaced by API calls)
+  const upcomingEvents: Event[] = [
     {
       id: 1,
       name: "Summer Music Festival",
@@ -61,6 +68,9 @@ const BloomdayContainer: React.FC = () => {
       image: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=400&h=200&fit=crop",
       isPast: false
     },
+  ];
+
+  const pastEvents: Event[] = [
     {
       id: 3,
       name: "Tech Meetup",
@@ -74,15 +84,9 @@ const BloomdayContainer: React.FC = () => {
       image: "https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=400&h=200&fit=crop",
       isPast: true
     }
-  ]);
+  ];
 
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [selectedFilters, setSelectedFilters] = useState<{ type: string; dateRange: DateRange }>({
-    type: '',
-    dateRange: { start: '', end: '' }
-  });
-
-  const filteredEvents = events.filter(event => {
+  const filteredEvents = upcomingEvents.filter(event => {
     const matchesSearch = event.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       event.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesType = !selectedFilters.type || event.type === selectedFilters.type;
@@ -90,9 +94,6 @@ const BloomdayContainer: React.FC = () => {
       (!selectedFilters.dateRange.end || event.date <= selectedFilters.dateRange.end);
     return matchesSearch && matchesType && matchesDate;
   });
-
-  const upcomingEvents = events.filter(event => !event.isPast);
-  const pastEvents = events.filter(event => event.isPast);
 
   const renderPage = () => {
     const pageProps = { setCurrentPage };
@@ -109,7 +110,7 @@ const BloomdayContainer: React.FC = () => {
     }
     if (currentPage.startsWith('event-')) {
       const eventId = currentPage.replace('event-', '');
-      const event = events.find(e => e.id === parseInt(eventId));
+      const event = upcomingEvents.find(e => e.id === parseInt(eventId)) || pastEvents.find(e => e.id === parseInt(eventId));
       return <EventDetailsPage {...pageProps} event={event} />;
     }
     return <HomePage {...pageProps} upcomingEvents={upcomingEvents} />;

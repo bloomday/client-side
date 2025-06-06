@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams } from 'react-router-dom'; // Assuming react-router-dom for token from URL
+// import { useParams } from 'react-router-dom'; // Assuming react-router-dom for token from URL
 import FlashMessage from '../components/FlashMessage';
 
 interface ResetPasswordPageProps {
@@ -129,4 +129,4 @@ const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ setCurrentPage, t
   );
 };
 
-export default ResetPasswordPage; 
+export default ResetPasswordPage;
