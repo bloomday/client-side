@@ -31,7 +31,6 @@ const eventTypes = ['Wedding', 'Birthday', 'Get Together', 'House Party', 'Festi
 
 const BloomdayContainer: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<string>('login');
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [events, setEvents] = useState<Event[]>([
     {
       id: 1,
@@ -126,7 +125,7 @@ const BloomdayContainer: React.FC = () => {
   const pastEvents = events.filter(event => event.isPast);
 
   const renderPage = () => {
-    const pageProps = { theme, setCurrentPage };
+    const pageProps = { setCurrentPage };
     if (currentPage === 'home') return <HomePage {...pageProps} upcomingEvents={upcomingEvents} />;
     if (currentPage === 'create') return <CreateEventPage {...pageProps} newEvent={newEvent} setNewEvent={setNewEvent} handleCreateEvent={handleCreateEvent} eventTypes={eventTypes} />;
     if (currentPage === 'browse') return <BrowseEventsPage {...pageProps} filteredEvents={filteredEvents} searchQuery={searchQuery} setSearchQuery={setSearchQuery} selectedFilters={selectedFilters} setSelectedFilters={setSelectedFilters} eventTypes={eventTypes} />;
@@ -142,7 +141,7 @@ const BloomdayContainer: React.FC = () => {
   };
 
   return (
-    <div className={theme === 'dark' ? 'min-h-screen bg-[#14191f]' : 'min-h-screen bg-white'}>
+    <div className={'min-h-screen bg-[#14191f]'}>
       <style>{`
         .line-clamp-2 {
           display: -webkit-box;
