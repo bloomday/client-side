@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import MobileNav from '../components/layout/MobileNav';
 import BackButton from '../components/layout/BackButton';
 import HomePage from './HomePage';
@@ -40,6 +40,28 @@ const BloomdayContainer: React.FC = () => {
     type: '',
     dateRange: { start: '', end: '' }
   });
+
+  useEffect(() => {
+    const path = window.location.pathname;
+    const search = window.location.search;
+
+    if (path === '/auth/verify-email' && search.includes('token=')) {
+      setCurrentPage('verify-email-route');
+    } else if (path.startsWith('/auth/reset-password/') && search.includes('token=')) {
+      // This handles direct access to reset password links
+      const token = path.split('/')[3]; // Assuming /auth/reset-password/TOKEN
+      setCurrentPage(`reset-password/${token}`);
+    } else if (path === '/login') {
+      setCurrentPage('login');
+    } else if (path === '/register') {
+      setCurrentPage('register');
+    } else if (path === '/forgot-password') {
+      setCurrentPage('forgot-password');
+    } else {
+      // Default to login if no specific route matched and not already on home
+      setCurrentPage('login');
+    }
+  }, []);
 
   // Dummy data for upcoming and past events (will be replaced by API calls)
   const upcomingEvents: Event[] = [
@@ -109,7 +131,7 @@ const BloomdayContainer: React.FC = () => {
       const token = currentPage.split('/')[1];
       return <ResetPasswordPage setCurrentPage={setCurrentPage} token={token} />;
     }
-    if (currentPage.startsWith('verify-email/')) {
+    if (currentPage === 'verify-email-route') {
       return <VerifyEmailPage setCurrentPage={setCurrentPage} />;
     }
     if (currentPage.startsWith('event-')) {
@@ -139,11 +161,11 @@ const BloomdayContainer: React.FC = () => {
           .pb-20 { padding-bottom: 5rem; }
         }
       `}</style>
-      {(currentPage !== 'home' && currentPage !== 'login' && currentPage !== 'register' && !currentPage.startsWith('reset-password/') && currentPage !== 'forgot-password' && !currentPage.startsWith('verify-email/')) && <BackButton setCurrentPage={setCurrentPage} />}
+      {(currentPage !== 'home' && currentPage !== 'login' && currentPage !== 'register' && !currentPage.startsWith('reset-password/') && currentPage !== 'forgot-password' && currentPage !== 'verify-email-route') && <BackButton setCurrentPage={setCurrentPage} />}
       <div className="pb-20 md:pb-0">
         {renderPage()}
       </div>
-      {(currentPage !== 'login' && currentPage !== 'register' && !currentPage.startsWith('reset-password/') && currentPage !== 'forgot-password' && !currentPage.startsWith('verify-email/')) && <MobileNav currentPage={currentPage} setCurrentPage={setCurrentPage} />}
+      {(currentPage !== 'login' && currentPage !== 'register' && !currentPage.startsWith('reset-password/') && currentPage !== 'forgot-password' && currentPage !== 'verify-email-route') && <MobileNav currentPage={currentPage} setCurrentPage={setCurrentPage} />}
     </div>
   );
 };

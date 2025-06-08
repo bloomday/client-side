@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+// import { useParams } from 'react-router-dom'; // Use URLSearchParams for query token
 import FlashMessage from '../components/FlashMessage';
 
 interface VerifyEmailPageProps {
@@ -7,7 +7,7 @@ interface VerifyEmailPageProps {
 }
 
 const VerifyEmailPage: React.FC<VerifyEmailPageProps> = ({ setCurrentPage }) => {
-  const { token } = useParams<{ token: string }>();
+  // const [token, setToken] = useState<string | null>(null); // Removed as urlToken is used directly
   const [flashMessage, setFlashMessage] = useState<string | null>(null);
   const [flashMessageType, setFlashMessageType] = useState<'success' | 'error' | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -18,8 +18,12 @@ const VerifyEmailPage: React.FC<VerifyEmailPageProps> = ({ setCurrentPage }) => 
   };
 
   useEffect(() => {
+    const queryParams = new URLSearchParams(window.location.search);
+    const urlToken = queryParams.get('token');
+    // setToken(urlToken); // No longer needed
+
     const verifyEmail = async () => {
-      if (!token) {
+      if (!urlToken) {
         setFlashMessage("Verification token is missing.");
         setFlashMessageType('error');
         setIsLoading(false);
@@ -27,7 +31,7 @@ const VerifyEmailPage: React.FC<VerifyEmailPageProps> = ({ setCurrentPage }) => 
       }
 
       try {
-        const response = await fetch(`https://bloomday-server-side.onrender.com/verify-email?token=${token}`);
+        const response = await fetch(`https://bloomday-server-side.onrender.com/verify-email?token=${urlToken}`);
         const data = await response.json();
 
         if (response.ok) {
@@ -49,8 +53,12 @@ const VerifyEmailPage: React.FC<VerifyEmailPageProps> = ({ setCurrentPage }) => 
       }
     };
 
-    verifyEmail();
-  }, [token, setCurrentPage]);
+    if (urlToken) {
+      verifyEmail();
+    } else {
+      setIsLoading(false);
+    }
+  }, [setCurrentPage]); // Depend on setCurrentPage as it's used inside useEffect
 
   return (
     <div className="min-h-screen bg-[#14191f] py-8 px-4 flex flex-col items-center justify-center">
