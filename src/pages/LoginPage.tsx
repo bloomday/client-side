@@ -27,20 +27,20 @@ const LoginPage: React.FC<LoginPageProps> = ({ setCurrentPage }) => {
 
     try {
       let data;
-      if (MOCK_LOGIN_SUCCESS) {
-        // Mock successful login response
-        data = {
-          user: {
-            _id: "mockUserId",
-            name: "Mock User",
-            email: "mock@example.com",
-            provider: "local",
-            isVerified: true,
-          },
-          token: "mockJWTToken",
-        };
-        await new Promise(resolve => setTimeout(resolve, 500)); // Simulate network delay
-      } else {
+    //   if (MOCK_LOGIN_SUCCESS) {
+    //     // Mock successful login response
+    //     data = {
+    //       user: {
+    //         _id: "mockUserId",
+    //         name: "Mock User",
+    //         email: "mock@example.com",
+    //         provider: "local",
+    //         isVerified: true,
+    //       },
+    //       token: "mockJWTToken",
+    //     };
+    //     await new Promise(resolve => setTimeout(resolve, 500)); // Simulate network delay
+    //   } else {
         const response = await fetch('https://bloomday-server-side.onrender.com/signin', {
           method: 'POST',
           headers: {
@@ -52,7 +52,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ setCurrentPage }) => {
         if (!response.ok) {
           throw new Error(data.message || "Login failed");
         }
-      }
+    //   }
 
       localStorage.setItem('user', JSON.stringify(data.user));
       localStorage.setItem('token', data.token);

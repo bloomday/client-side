@@ -10,6 +10,7 @@ import LoginPage from './LoginPage';
 import RegisterPage from './RegisterPage';
 import ForgotPasswordPage from './ForgotPasswordPage';
 import ResetPasswordPage from './ResetPasswordPage';
+import VerifyEmailPage from './VerifyEmailPage';
 
 interface Event {
   id: number;
@@ -108,6 +109,10 @@ const BloomdayContainer: React.FC = () => {
       const token = currentPage.split('/')[1];
       return <ResetPasswordPage setCurrentPage={setCurrentPage} token={token} />;
     }
+    if (currentPage.startsWith('verify-email/')) {
+      const token = currentPage.split('/')[1];
+      return <VerifyEmailPage setCurrentPage={setCurrentPage} />;
+    }
     if (currentPage.startsWith('event-')) {
       const eventId = currentPage.replace('event-', '');
       const event = upcomingEvents.find(e => e.id === parseInt(eventId)) || pastEvents.find(e => e.id === parseInt(eventId));
@@ -135,11 +140,11 @@ const BloomdayContainer: React.FC = () => {
           .pb-20 { padding-bottom: 5rem; }
         }
       `}</style>
-      {(currentPage !== 'home' && currentPage !== 'login' && currentPage !== 'register' && !currentPage.startsWith('reset-password/') && currentPage !== 'forgot-password') && <BackButton setCurrentPage={setCurrentPage} />}
+      {(currentPage !== 'home' && currentPage !== 'login' && currentPage !== 'register' && !currentPage.startsWith('reset-password/') && currentPage !== 'forgot-password' && !currentPage.startsWith('verify-email/')) && <BackButton setCurrentPage={setCurrentPage} />}
       <div className="pb-20 md:pb-0">
         {renderPage()}
       </div>
-      {(currentPage !== 'login' && currentPage !== 'register' && !currentPage.startsWith('reset-password/') && currentPage !== 'forgot-password') && <MobileNav currentPage={currentPage} setCurrentPage={setCurrentPage} />}
+      {(currentPage !== 'login' && currentPage !== 'register' && !currentPage.startsWith('reset-password/') && currentPage !== 'forgot-password' && !currentPage.startsWith('verify-email/')) && <MobileNav currentPage={currentPage} setCurrentPage={setCurrentPage} />}
     </div>
   );
 };
