@@ -5,8 +5,6 @@ interface LoginPageProps {
   setCurrentPage: (page: string) => void;
 }
 
-const MOCK_LOGIN_SUCCESS = true; // Set to true to mock a successful login response
-
 const LoginPage: React.FC<LoginPageProps> = ({ setCurrentPage }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

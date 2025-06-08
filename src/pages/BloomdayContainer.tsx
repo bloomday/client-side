@@ -110,7 +110,6 @@ const BloomdayContainer: React.FC = () => {
       return <ResetPasswordPage setCurrentPage={setCurrentPage} token={token} />;
     }
     if (currentPage.startsWith('verify-email/')) {
-      const token = currentPage.split('/')[1];
       return <VerifyEmailPage setCurrentPage={setCurrentPage} />;
     }
     if (currentPage.startsWith('event-')) {
