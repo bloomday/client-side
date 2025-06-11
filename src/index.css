@@ -16,3 +16,29 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.embla {
+  --slide-spacing: 1rem; /* Adjust as needed */
+  --slide-size: 300px; /* Force a fixed pixel width for debugging */
+  overflow-x: auto; /* Temporarily force scrollbar for debugging */
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.embla::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.embla {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.embla__container {
+  margin-left: calc(var(--slide-spacing) * -1);
+}
+
+.embla__slide {
+  padding-left: var(--slide-spacing);
+  flex: 0 0 var(--slide-size);
+}
