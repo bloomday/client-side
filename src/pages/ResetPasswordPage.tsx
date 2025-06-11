@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import FlashMessage from '../components/FlashMessage';
 
 interface ResetPasswordPageProps {
-  setCurrentPage: (page: string) => void;
+  setCurrentPage: (page: string, internal?: boolean) => void;
   token: string; // Add token prop
 }
 
@@ -59,7 +59,7 @@ const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ setCurrentPage, t
         setFlashMessage(data.message || "Password reset successfully!");
         setFlashMessageType('success');
         setTimeout(() => {
-          setCurrentPage('login');
+          setCurrentPage('login', true);
         }, 1500); // Redirect after short delay
       } else {
         setFlashMessage(data.message || "Failed to reset password. Invalid or expired token.");

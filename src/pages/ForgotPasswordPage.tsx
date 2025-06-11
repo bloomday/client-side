@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import FlashMessage from '../components/FlashMessage';
 
 interface ForgotPasswordPageProps {
-  setCurrentPage: (page: string) => void;
+  setCurrentPage: (page: string, internal?: boolean) => void;
 }
 
 const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({ setCurrentPage }) => {
@@ -84,7 +84,7 @@ const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({ setCurrentPage 
         <FlashMessage message={flashMessage} type={flashMessageType} onClose={handleCloseFlash} />
 
         <div className="mt-6 text-center">
-          <button onClick={() => setCurrentPage('login')} className="font-semibold text-purple-500 hover:underline" disabled={isLoading}>
+          <button onClick={() => setCurrentPage('login', true)} className="font-semibold text-purple-500 hover:underline" disabled={isLoading}>
             Back to Login
           </button>
         </div>

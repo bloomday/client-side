@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import MobileNav from '../components/layout/MobileNav';
 import BackButton from '../components/layout/BackButton';
 import HomePage from './HomePage';
@@ -22,7 +22,7 @@ interface DateRange {
 const eventTypes = ['Wedding', 'Birthday', 'Get Together', 'House Party', 'Festival', 'Conference', 'Workshop'];
 
 const BloomdayContainer: React.FC = () => {
-  const [currentPage, setCurrentPage] = useState<string>('login');
+  const [currentPage, _setCurrentPage] = useState<string>('login');
   const [trendingEvents, setTrendingEvents] = useState<Event[]>([]);
   const [myEvents, setMyEvents] = useState<Event[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -31,10 +31,21 @@ const BloomdayContainer: React.FC = () => {
     dateRange: { start: '', end: '' }
   });
 
-  // This comment is added to force a re-compile on Netlify.
+  const isInternalNavigationRef = useRef(false);
+
+  const setCurrentPage = (page: string, isInternal = false) => {
+    isInternalNavigationRef.current = isInternal;
+    _setCurrentPage(page);
+  };
+
   useEffect(() => {
     const path = window.location.pathname;
     const search = window.location.search;
+
+    if (isInternalNavigationRef.current) {
+      isInternalNavigationRef.current = false; // Reset the flag
+      return; // Skip URL-based page setting
+    }
 
     if (path === '/auth/verify-email' && search.includes('token=')) {
       setCurrentPage('verify-email-route');
@@ -47,6 +58,8 @@ const BloomdayContainer: React.FC = () => {
       setCurrentPage('register');
     } else if (path === '/forgot-password') {
       setCurrentPage('forgot-password');
+    } else if (localStorage.getItem('token')) { 
+      setCurrentPage('home');
     } else {
       setCurrentPage('login');
     }

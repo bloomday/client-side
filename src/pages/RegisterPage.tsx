@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import FlashMessage from '../components/FlashMessage';
 
 interface RegisterPageProps {
-  setCurrentPage: (page: string) => void;
+  setCurrentPage: (page: string, internal?: boolean) => void;
 }
 
 const RegisterPage: React.FC<RegisterPageProps> = ({ setCurrentPage }) => {
@@ -47,7 +47,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ setCurrentPage }) => {
         setFlashMessage(data.message || "Registration successful! Please check your email.");
         setFlashMessageType('success');
         setTimeout(() => {
-          setCurrentPage('login');
+          setCurrentPage('login', true);
         }, 1500); // Redirect after short delay
       } else {
         setFlashMessage(data.message || "Registration failed. Please try again.");

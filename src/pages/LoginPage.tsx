@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import FlashMessage from '../components/FlashMessage';
 
 interface LoginPageProps {
-  setCurrentPage: (page: string) => void;
+  setCurrentPage: (page: string, internal?: boolean) => void;
 }
 
 const LoginPage: React.FC<LoginPageProps> = ({ setCurrentPage }) => {
@@ -57,7 +57,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ setCurrentPage }) => {
       setFlashMessage("Login successful!");
       setFlashMessageType('success');
       setTimeout(() => {
-        setCurrentPage('home');
+        setCurrentPage('home', true);
       }, 1500);
     } catch (error: any) {
       console.error('Login error:', error);

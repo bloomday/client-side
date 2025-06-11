@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import FlashMessage from '../components/FlashMessage';
 
 interface VerifyEmailPageProps {
-  setCurrentPage: (page: string) => void;
+  setCurrentPage: (page: string, internal?: boolean) => void;
 }
 
 const VerifyEmailPage: React.FC<VerifyEmailPageProps> = ({ setCurrentPage }) => {
@@ -38,7 +38,7 @@ const VerifyEmailPage: React.FC<VerifyEmailPageProps> = ({ setCurrentPage }) => 
           setFlashMessage(data.message || "Email verified successfully! You can now log in.");
           setFlashMessageType('success');
           setTimeout(() => {
-            setCurrentPage('login');
+            setCurrentPage('login', true);
           }, 2000);
         } else {
           console.error(data.message || "error: Email verification failed.");
