@@ -13,17 +13,25 @@ import ResetPasswordPage from './ResetPasswordPage';
 import VerifyEmailPage from './VerifyEmailPage';
 
 interface Event {
-  id: number;
+  _id: string;
   name: string;
-  date: string;
-  time: string;
-  location: string;
-  type: string;
   description: string;
-  host: string;
-  attendees: number;
-  image: string;
-  isPast: boolean;
+  date: string;
+  location: string;
+  type?: string;
+  hosts: string[];
+  slug: string;
+  eventUrl: string;
+  qrCode: string;
+  allowCrowdfunding: boolean;
+  invitees: string[];
+  ivImage: string | null;
+  gallery: any[];
+  contributions: any[];
+  __v: number;
+  totalAmount: number;
+  contributors: number;
+  score: number;
 }
 
 interface DateRange {
@@ -35,6 +43,7 @@ const eventTypes = ['Wedding', 'Birthday', 'Get Together', 'House Party', 'Festi
 
 const BloomdayContainer: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<string>('login');
+  const [trendingEvents, setTrendingEvents] = useState<Event[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedFilters, setSelectedFilters] = useState<{ type: string; dateRange: DateRange }>({
     type: '',
@@ -48,8 +57,7 @@ const BloomdayContainer: React.FC = () => {
     if (path === '/auth/verify-email' && search.includes('token=')) {
       setCurrentPage('verify-email-route');
     } else if (path.startsWith('/auth/reset-password/') && search.includes('token=')) {
-      // This handles direct access to reset password links
-      const token = path.split('/')[3]; // Assuming /auth/reset-password/TOKEN
+      const token = path.split('/')[3];
       setCurrentPage(`reset-password/${token}`);
     } else if (path === '/login') {
       setCurrentPage('login');
@@ -58,58 +66,40 @@ const BloomdayContainer: React.FC = () => {
     } else if (path === '/forgot-password') {
       setCurrentPage('forgot-password');
     } else {
-      // Default to login if no specific route matched and not already on home
       setCurrentPage('login');
     }
-  }, []);
 
-  // Dummy data for upcoming and past events (will be replaced by API calls)
-  const upcomingEvents: Event[] = [
-    {
-      id: 1,
-      name: "Summer Music Festival",
-      date: "2025-07-15",
-      time: "18:00",
-      location: "Central Park",
-      type: "Festival",
-      description: "Join us for an amazing evening of live music featuring local and international artists.",
-      host: "MusicEvents Co.",
-      attendees: 152,
-      image: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=200&fit=crop",
-      isPast: false
-    },
-    {
-      id: 2,
-      name: "Birthday Celebration",
-      date: "2025-06-20",
-      time: "19:30",
-      location: "Downtown Venue",
-      type: "Birthday",
-      description: "Come celebrate Sarah's 25th birthday with food, drinks, and great company!",
-      host: "Sarah Johnson",
-      attendees: 45,
-      image: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=400&h=200&fit=crop",
-      isPast: false
-    },
-  ];
+    const fetchTrendingEvents = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          console.warn("No token found for fetching trending events.");
+          return;
+        }
 
-  const pastEvents: Event[] = [
-    {
-      id: 3,
-      name: "Tech Meetup",
-      date: "2025-05-10",
-      time: "18:30",
-      location: "Innovation Hub",
-      type: "Get Together",
-      description: "Monthly networking event for tech professionals and enthusiasts.",
-      host: "Tech Community",
-      attendees: 89,
-      image: "https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=400&h=200&fit=crop",
-      isPast: true
+        const response = await fetch('https://bloomday-server-side.onrender.com/events/trending', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          setTrendingEvents(result.trending || []);
+        } else {
+          console.error("Failed to fetch trending events:", response.status, response.statusText);
+        }
+      } catch (error) {
+        console.error("Error fetching trending events:", error);
+      }
+    };
+
+    if (localStorage.getItem('token')) {
+      fetchTrendingEvents();
     }
-  ];
+  }, [currentPage]);
 
-  const filteredEvents = upcomingEvents.filter(event => {
+  const filteredEvents = trendingEvents.filter(event => {
     const matchesSearch = event.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       event.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesType = !selectedFilters.type || event.type === selectedFilters.type;
@@ -117,6 +107,9 @@ const BloomdayContainer: React.FC = () => {
       (!selectedFilters.dateRange.end || event.date <= selectedFilters.dateRange.end);
     return matchesSearch && matchesType && matchesDate;
   });
+
+  const upcomingEvents = trendingEvents.filter(event => new Date(event.date) > new Date());
+  const pastEvents = trendingEvents.filter(event => new Date(event.date) <= new Date());
 
   const renderPage = () => {
     const pageProps = { setCurrentPage };
@@ -136,7 +129,7 @@ const BloomdayContainer: React.FC = () => {
     }
     if (currentPage.startsWith('event-')) {
       const eventId = currentPage.replace('event-', '');
-      const event = upcomingEvents.find(e => e.id === parseInt(eventId)) || pastEvents.find(e => e.id === parseInt(eventId));
+      const event = trendingEvents.find(e => e._id === eventId);
       return <EventDetailsPage {...pageProps} event={event} />;
     }
     return <HomePage {...pageProps} upcomingEvents={upcomingEvents} />;

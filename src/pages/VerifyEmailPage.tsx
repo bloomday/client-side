@@ -41,6 +41,7 @@ const VerifyEmailPage: React.FC<VerifyEmailPageProps> = ({ setCurrentPage }) => 
             setCurrentPage('login');
           }, 2000);
         } else {
+          console.error(data.message || "error: Email verification failed.");
           setFlashMessage(data.message || "Email verification failed. Invalid or expired token.");
           setFlashMessageType('error');
         }
