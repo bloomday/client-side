@@ -1,9 +1,10 @@
 import React from 'react';
 import EventCard from '../components/EventCard';
 import { Search } from 'lucide-react';
+import { Event } from '../types';
 
 interface BrowseEventsPageProps {
-  filteredEvents: any[];
+  filteredEvents: Event[];
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   selectedFilters: { type: string; dateRange: { start: string; end: string } };
@@ -73,9 +74,9 @@ const BrowseEventsPage: React.FC<BrowseEventsPageProps> = ({ filteredEvents, sea
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredEvents.map(event => (
             <EventCard 
-              key={event.id} 
+              key={event._id} 
               event={event} 
-              onClick={(event) => setCurrentPage(`event-${event.id}`)}
+              onClick={(event) => setCurrentPage(`event-${event._id}`)}
             />
           ))}
         </div>

@@ -1,8 +1,9 @@
 import React from 'react';
 import EventCard from '../components/EventCard';
+import { Event } from '../types';
 
 interface PastEventsPageProps {
-  pastEvents: any[];
+  pastEvents: Event[];
   setCurrentPage: (page: string) => void;
 }
 
@@ -14,9 +15,9 @@ const PastEventsPage: React.FC<PastEventsPageProps> = ({ pastEvents, setCurrentP
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {pastEvents.map(event => (
             <EventCard 
-              key={event.id} 
+              key={event._id} 
               event={event} 
-              onClick={(event) => setCurrentPage(`event-${event.id}`)}
+              onClick={(event) => setCurrentPage(`event-${event._id}`)}
               showPastLabel={true}
             />
           ))}

@@ -1,9 +1,10 @@
 import React from 'react';
 import { Calendar, MapPin, Users } from 'lucide-react';
+import { Event } from '../types';
 
 export interface EventCardProps {
-  event: any;
-  onClick: (event: any) => void;
+  event: Event;
+  onClick: (event: Event) => void;
   showPastLabel?: boolean;
 }
 
@@ -13,7 +14,7 @@ const EventCard: React.FC<EventCardProps> = ({ event, onClick, showPastLabel = f
     onClick={() => onClick(event)}
   >
     <img 
-      src={event.image} 
+      src={event.ivImage || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400&h=200&fit=crop'} 
       alt={event.name}
       className="w-full h-32 object-cover"
     />
@@ -26,7 +27,7 @@ const EventCard: React.FC<EventCardProps> = ({ event, onClick, showPastLabel = f
       <h3 className="font-semibold text-lg mb-2 text-teal-400">{event.name}</h3>
       <div className="flex items-center text-gray-600 text-sm mb-1">
         <Calendar className="w-4 h-4 mr-2" />
-        <span>{event.date} at {event.time}</span>
+        <span>{new Date(event.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} at {new Date(event.date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}</span>
       </div>
       <div className="flex items-center text-gray-600 text-sm mb-2">
         <MapPin className="w-4 h-4 mr-2" />
@@ -36,10 +37,10 @@ const EventCard: React.FC<EventCardProps> = ({ event, onClick, showPastLabel = f
       <div className="flex items-center justify-between mt-3">
         <div className="flex items-center text-gray-600 text-sm">
           <Users className="w-4 h-4 mr-1" />
-          <span>{event.attendees} attending</span>
+          <span>{event.invitees ? event.invitees.length : 0} attending</span>
         </div>
         <span className="bg-teal-100 text-teal-800 text-xs px-2 py-1 rounded-full">
-          {event.type}
+          {event.type || 'General'}
         </span>
       </div>
     </div>

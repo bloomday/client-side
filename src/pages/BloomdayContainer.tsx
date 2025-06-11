@@ -31,6 +31,7 @@ const BloomdayContainer: React.FC = () => {
     dateRange: { start: '', end: '' }
   });
 
+  // This comment is added to force a re-compile on Netlify.
   useEffect(() => {
     const path = window.location.pathname;
     const search = window.location.search;
