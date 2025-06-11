@@ -1,26 +1,5 @@
 import React from 'react';
-
-interface Event {
-  _id: string;
-  name: string;
-  description: string;
-  date: string;
-  location: string;
-  type?: string;
-  hosts: string[];
-  slug: string;
-  eventUrl: string;
-  qrCode: string;
-  allowCrowdfunding: boolean;
-  invitees: string[];
-  ivImage: string | null;
-  gallery: any[];
-  contributions: any[];
-  __v: number;
-  totalAmount: number;
-  contributors: number;
-  score: number;
-}
+import { Event } from '../types';
 
 interface HomePageProps {
   upcomingEvents: Event[];
@@ -100,6 +79,10 @@ const HomePage: React.FC<HomePageProps> = ({ upcomingEvents, setCurrentPage }) =
       <div className="flex flex-1 gap-3 rounded-lg border border-[#3d4c5c] bg-[#1f262e] p-4 items-center cursor-pointer" onClick={() => setCurrentPage('past')}>
         <svg className="text-white" width="24" height="24" fill="currentColor" viewBox="0 0 256 256"><path d="M136,80v43.47l36.12,21.67a8,8,0,0,1-8.24,13.72l-40-24A8,8,0,0,1,120,128V80a8,8,0,0,1,16,0Zm-8-48A95.44,95.44,0,0,0,60.08,60.15C52.81,67.51,46.35,74.59,40,82V64a8,8,0,0,0-16,0v40a8,8,0,0,0,8,8H72a8,8,0,0,0,0-16H49c7.15-8.42,14.27-16.35,22.39-24.57a80,80,0,1,1,1.66,114.75,8,8,0,1,0-11,11.64A96,96,0,1,0,128,32Z"></path></svg>
         <h2 className="text-white text-base font-bold leading-tight">Past Events</h2>
+      </div>
+      <div className="flex flex-1 gap-3 rounded-lg border border-[#3d4c5c] bg-[#1f262e] p-4 items-center cursor-pointer" onClick={() => setCurrentPage('my-events')}>
+        <svg className="text-white" width="24" height="24" fill="currentColor" viewBox="0 0 256 256"><path d="M208,64H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40V64H48A16,16,0,0,0,32,80V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V80A16,16,0,0,0,208,64ZM96,40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8V64H96ZM208,208H48V80H208V208Z"></path></svg>
+        <h2 className="text-white text-base font-bold leading-tight">My Events</h2>
       </div>
     </div>
     <div className="h-5 bg-[#14191f]"></div>

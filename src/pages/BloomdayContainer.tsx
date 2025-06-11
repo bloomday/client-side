@@ -11,28 +11,8 @@ import RegisterPage from './RegisterPage';
 import ForgotPasswordPage from './ForgotPasswordPage';
 import ResetPasswordPage from './ResetPasswordPage';
 import VerifyEmailPage from './VerifyEmailPage';
-
-interface Event {
-  _id: string;
-  name: string;
-  description: string;
-  date: string;
-  location: string;
-  type?: string;
-  hosts: string[];
-  slug: string;
-  eventUrl: string;
-  qrCode: string;
-  allowCrowdfunding: boolean;
-  invitees: string[];
-  ivImage: string | null;
-  gallery: any[];
-  contributions: any[];
-  __v: number;
-  totalAmount: number;
-  contributors: number;
-  score: number;
-}
+import MyEventsPage from './MyEventsPage';
+import { Event } from '../types';
 
 interface DateRange {
   start: string;
@@ -44,6 +24,7 @@ const eventTypes = ['Wedding', 'Birthday', 'Get Together', 'House Party', 'Festi
 const BloomdayContainer: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<string>('login');
   const [trendingEvents, setTrendingEvents] = useState<Event[]>([]);
+  const [myEvents, setMyEvents] = useState<Event[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedFilters, setSelectedFilters] = useState<{ type: string; dateRange: DateRange }>({
     type: '',
@@ -94,8 +75,34 @@ const BloomdayContainer: React.FC = () => {
       }
     };
 
+    const fetchMyEvents = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          console.warn("No token found for fetching user's events.");
+          return;
+        }
+
+        const response = await fetch('https://bloomday-server-side.onrender.com/my-events', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          setMyEvents(result.events || []);
+        } else {
+          console.error("Failed to fetch user's events:", response.status, response.statusText);
+        }
+      } catch (error) {
+        console.error("Error fetching user's events:", error);
+      }
+    };
+
     if (localStorage.getItem('token')) {
       fetchTrendingEvents();
+      fetchMyEvents();
     }
   }, [currentPage]);
 
@@ -117,6 +124,7 @@ const BloomdayContainer: React.FC = () => {
     if (currentPage === 'create') return <CreateEventPage {...pageProps} eventTypes={eventTypes} />;
     if (currentPage === 'browse') return <BrowseEventsPage {...pageProps} filteredEvents={filteredEvents} searchQuery={searchQuery} setSearchQuery={setSearchQuery} selectedFilters={selectedFilters} setSelectedFilters={setSelectedFilters} eventTypes={eventTypes} />;
     if (currentPage === 'past') return <PastEventsPage {...pageProps} pastEvents={pastEvents} />;
+    if (currentPage === 'my-events') return <MyEventsPage {...pageProps} myEvents={myEvents} />;
     if (currentPage === 'login') return <LoginPage {...pageProps} />;
     if (currentPage === 'register') return <RegisterPage {...pageProps} />;
     if (currentPage === 'forgot-password') return <ForgotPasswordPage {...pageProps} />;
@@ -154,11 +162,11 @@ const BloomdayContainer: React.FC = () => {
           .pb-20 { padding-bottom: 5rem; }
         }
       `}</style>
-      {(currentPage !== 'home' && currentPage !== 'login' && currentPage !== 'register' && !currentPage.startsWith('reset-password/') && currentPage !== 'forgot-password' && currentPage !== 'verify-email-route') && <BackButton setCurrentPage={setCurrentPage} />}
+      {(currentPage !== 'home' && currentPage !== 'login' && currentPage !== 'register' && !currentPage.startsWith('reset-password/') && currentPage !== 'forgot-password' && currentPage !== 'verify-email-route' && currentPage !== 'my-events') && <BackButton setCurrentPage={setCurrentPage} />}
       <div className="pb-20 md:pb-0">
         {renderPage()}
       </div>
-      {(currentPage !== 'login' && currentPage !== 'register' && !currentPage.startsWith('reset-password/') && currentPage !== 'forgot-password' && currentPage !== 'verify-email-route') && <MobileNav currentPage={currentPage} setCurrentPage={setCurrentPage} />}
+      {(currentPage !== 'login' && currentPage !== 'register' && !currentPage.startsWith('reset-password/') && currentPage !== 'forgot-password' && currentPage !== 'verify-email-route' && currentPage !== 'my-events') && <MobileNav currentPage={currentPage} setCurrentPage={setCurrentPage} />}
     </div>
   );
 };
