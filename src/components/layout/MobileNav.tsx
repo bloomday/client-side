@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Plus, Calendar, Home as HomeIcon } from 'lucide-react';
+import { Search, User as UserIcon, Calendar, Home as HomeIcon } from 'lucide-react';
 
 interface MobileNavProps {
   currentPage: string;
@@ -23,19 +23,20 @@ const MobileNav: React.FC<MobileNavProps> = ({ currentPage, setCurrentPage }) =>
         <Search className="w-6 h-6 mb-1" />
         <span className="text-xs">Browse</span>
       </button>
-      <button 
-        onClick={() => setCurrentPage('create', true)}
-        className={`flex flex-col items-center py-2 px-3 rounded ${currentPage === 'create' ? 'text-teal-600' : 'text-gray-600'}`}
-      >
-        <Plus className="w-6 h-6 mb-1" />
-        <span className="text-xs">Create</span>
-      </button>
+      
       <button 
         onClick={() => setCurrentPage('past', true)}
         className={`flex flex-col items-center py-2 px-3 rounded ${currentPage === 'past' ? 'text-teal-600' : 'text-gray-600'}`}
       >
         <Calendar className="w-6 h-6 mb-1" />
         <span className="text-xs">Past</span>
+      </button>
+      <button 
+        onClick={() => setCurrentPage('account', true)}
+        className={`flex flex-col items-center py-2 px-3 rounded ${currentPage === 'account' ? 'text-teal-600' : 'text-gray-600'}`}
+      >
+        <UserIcon className="w-6 h-6 mb-1" />
+        <span className="text-xs">Account</span>
       </button>
     </div>
   </div>

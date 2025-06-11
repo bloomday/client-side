@@ -3,7 +3,7 @@ import { Event } from '../types';
 
 interface MyEventsPageProps {
   myEvents: Event[];
-  setCurrentPage: (page: string) => void;
+  setCurrentPage: (page: string, replaceHistory?: boolean, origin?: 'home' | 'my-events' | 'browse') => void;
 }
 
 const MyEventsPage: React.FC<MyEventsPageProps> = ({ myEvents, setCurrentPage }) => (
@@ -16,7 +16,12 @@ const MyEventsPage: React.FC<MyEventsPageProps> = ({ myEvents, setCurrentPage })
           const formattedDate = eventDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
           const formattedTime = eventDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
           return (
-            <div className="flex h-full flex-1 flex-col gap-4 rounded-lg min-w-60 bg-[#1f262e] border border-[#3d4c5c] p-4" key={event._id}>
+            <div
+              key={event._id}
+              className="flex h-full flex-1 flex-col gap-4 rounded-lg min-w-60 bg-[#1f262e] border border-purple-500 p-4 cursor-pointer transform transition-transform hover:scale-105 relative"
+              onClick={() => setCurrentPage('event-' + event._id, true, 'my-events')}
+            >
+              <span className="absolute top-2 right-2 bg-purple-600 text-white text-xs font-bold px-2 py-1 rounded-full">Your Event</span>
               <div
                 className="w-full bg-center bg-no-repeat aspect-video bg-cover rounded-xl flex flex-col"
                 style={{ backgroundImage: `url('${event.ivImage || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400&h=200&fit=crop'}')` }}
@@ -33,7 +38,7 @@ const MyEventsPage: React.FC<MyEventsPageProps> = ({ myEvents, setCurrentPage })
         <div className="text-center py-12 w-full">
           <p className="text-[#9dadbe] text-lg">You haven't created any events yet.</p>
           <button 
-            onClick={() => setCurrentPage('create')}
+            onClick={() => setCurrentPage('create', true)}
             className="mt-4 bg-gradient-to-r from-purple-600 to-teal-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-purple-700 hover:to-teal-700 transition-all transform hover:scale-105"
           >
             Create Your First Event

@@ -54,6 +54,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ setCurrentPage }) => {
 
       localStorage.setItem('user', JSON.stringify(data.user));
       localStorage.setItem('token', data.token);
+      localStorage.setItem('userId', data.user._id);
       setFlashMessage("Login successful!");
       setFlashMessageType('success');
       setTimeout(() => {

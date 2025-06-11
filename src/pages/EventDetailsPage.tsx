@@ -1,12 +1,87 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, MapPin, User } from 'lucide-react';
 import { Event } from '../types';
+import FlashMessage from '../components/FlashMessage';
 
 interface EventDetailsPageProps {
   event: Event | undefined;
+  fromMyEventsPage?: boolean;
 }
 
-const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event }) => {
+const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event, fromMyEventsPage }) => {
+  const [inviteEmails, setInviteEmails] = useState('');
+  const [flashMessage, setFlashMessage] = useState<string | null>(null);
+  const [flashMessageType, setFlashMessageType] = useState<'success' | 'error' | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isCurrentUserHost, setIsCurrentUserHost] = useState(false);
+
+  useEffect(() => {
+    const userId = localStorage.getItem('userId');
+    if (event?.hosts && userId) {
+      const hostStatus = event.hosts.includes(userId);
+      setIsCurrentUserHost(hostStatus);
+    }
+  }, [event, fromMyEventsPage]);
+
+  const handleCloseFlash = () => {
+    setFlashMessage(null);
+    setFlashMessageType(null);
+  };
+
+  const handleSendInvites = async () => {
+    if (!event?._id) {
+      setFlashMessage('Event ID is missing.');
+      setFlashMessageType('error');
+      return;
+    }
+
+    const emailsArray = inviteEmails.split(',').map(email => email.trim()).filter(email => email !== '');
+    if (emailsArray.length === 0) {
+      setFlashMessage('Please enter at least one email address.');
+      setFlashMessageType('error');
+      return;
+    }
+
+    setIsLoading(true);
+    setFlashMessage(null);
+    setFlashMessageType(null);
+
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setFlashMessage('Authentication token not found. Please log in.');
+        setFlashMessageType('error');
+        setIsLoading(false);
+        return;
+      }
+
+      const response = await fetch('https://bloomday-server-side.onrender.com/send-invite', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ eventId: event._id, inviteEmails: emailsArray }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setFlashMessage(data.message || 'Invites sent successfully.');
+        setFlashMessageType('success');
+        setInviteEmails(''); // Clear input after success
+      } else {
+        throw new Error(data.message || 'Failed to send invites.');
+      }
+    } catch (error: any) {
+      console.error('Send invites error:', error);
+      setFlashMessage(error.message || 'Network error. Please try again later.');
+      setFlashMessageType('error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   if (!event) {
     return (
       <div className="min-h-screen bg-[#14191f] flex items-center justify-center">
@@ -51,6 +126,56 @@ const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event }) => {
                 )}
               </div>
             </div>
+            {isCurrentUserHost && fromMyEventsPage && (
+              <div className="bg-white rounded-lg shadow-md p-6 mt-6">
+                <h2 className="text-2xl font-bold text-gray-800 mb-4">Send Invites</h2>
+                <textarea
+                  className="w-full p-3 border rounded-lg resize-y bg-gray-100 text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  rows={4}
+                  placeholder="Enter invitee emails, separated by commas (e.g., email1@example.com, email2@example.com)"
+                  value={inviteEmails}
+                  onChange={(e) => setInviteEmails(e.target.value)}
+                ></textarea>
+                <button
+                  onClick={handleSendInvites}
+                  className="w-full bg-gradient-to-r from-purple-600 to-teal-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-purple-700 hover:to-teal-700 transition-all mt-4"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <svg className="animate-spin h-5 w-5 text-white mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  ) : (
+                    'Send Invites'
+                  )}
+                </button>
+              </div>
+            )}
+
+            {/* QR Code and Share Section */}
+            {isCurrentUserHost && fromMyEventsPage && event.qrCode && (
+              <div className="bg-white rounded-lg shadow-md p-6 mt-6">
+                <h2 className="text-2xl font-bold text-gray-800 mb-4">Event QR Code</h2>
+                <div className="flex flex-col items-center">
+                  <img src={event.qrCode} alt="Event QR Code" className="w-48 h-48 object-contain mb-4" />
+                  <button 
+                    onClick={() => navigator.clipboard.writeText(event.eventUrl)}
+                    className="w-full bg-gradient-to-r from-purple-600 to-teal-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-purple-700 hover:to-teal-700 transition-all"
+                  >
+                    Copy Event Link
+                  </button>
+                  {navigator.share && (
+                    <button 
+                      onClick={() => navigator.share({ title: event.name, url: event.eventUrl })}
+                      className="w-full bg-blue-500 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-600 transition-all mt-3"
+                    >
+                      Share Event
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-md p-6 sticky top-8">
@@ -103,6 +228,7 @@ const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event }) => {
           </div>
         </div>
       </div>
+      <FlashMessage message={flashMessage} type={flashMessageType} onClose={handleCloseFlash} />
     </div>
   );
 };

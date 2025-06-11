@@ -12,6 +12,7 @@ import ForgotPasswordPage from './ForgotPasswordPage';
 import ResetPasswordPage from './ResetPasswordPage';
 import VerifyEmailPage from './VerifyEmailPage';
 import MyEventsPage from './MyEventsPage';
+import AccountPage from './AccountPage';
 import { Event } from '../types';
 
 interface DateRange {
@@ -30,8 +31,9 @@ const BloomdayContainer: React.FC = () => {
     type: '',
     dateRange: { start: '', end: '' }
   });
+  const [eventDetailsOrigin, setEventDetailsOrigin] = useState<'home' | 'my-events' | 'browse' | undefined>(undefined);
 
-  const setCurrentPage = (page: string, replaceHistory = false) => {
+  const setCurrentPage = (page: string, replaceHistory = false, origin?: 'home' | 'my-events' | 'browse') => {
     const newPath = page === 'home' ? '/' : `/${page}`;
     let pathForHistory = newPath;
 
@@ -47,6 +49,9 @@ const BloomdayContainer: React.FC = () => {
     } else if (page.startsWith('event-')) {
       const eventId = page.replace('event-', '');
       pathForHistory = `/event/${eventId}`;
+      setEventDetailsOrigin(origin || undefined);
+    } else {
+      setEventDetailsOrigin(undefined);
     }
 
     if (replaceHistory) {
@@ -61,8 +66,9 @@ const BloomdayContainer: React.FC = () => {
     const setPageFromUrl = () => {
       const path = window.location.pathname;
       const search = window.location.search;
-      let targetPage = 'login'; // Default to login
+      let targetPage = 'login';
       let shouldReplaceHistory = false;
+      let detectedOrigin: 'home' | 'my-events' | 'browse' | undefined = undefined;
 
       if (path === '/auth/verify-email' && search.includes('token=')) {
         targetPage = 'verify-email-route';
@@ -72,40 +78,47 @@ const BloomdayContainer: React.FC = () => {
       } else if (path === '/login' || path === '/register' || path === '/forgot-password') {
         if (localStorage.getItem('token')) {
           targetPage = 'home';
-          shouldReplaceHistory = true; // Redirect to home if already logged in
+          shouldReplaceHistory = true;
         } else {
           targetPage = path.substring(1);
         }
       } else if (path === '/') {
         if (!localStorage.getItem('token')) {
           targetPage = 'login';
-          shouldReplaceHistory = true; // Redirect to login if not logged in
+          shouldReplaceHistory = true;
         } else {
           targetPage = 'home';
         }
+      } else if (path.startsWith('/event/')) {
+        targetPage = `event-${path.split('/')[2]}`;
+        detectedOrigin = undefined;
       } else {
         const pageFromPath = path.substring(1);
         const knownPages = ['create', 'browse', 'past', 'my-events'];
-        if (knownPages.includes(pageFromPath) || pageFromPath.startsWith('event-')) {
+        if (knownPages.includes(pageFromPath)) {
           targetPage = pageFromPath;
+          if (pageFromPath === 'my-events') {
+            detectedOrigin = 'my-events';
+          } else if (pageFromPath === 'browse') {
+            detectedOrigin = 'browse';
+          }
         } else if (localStorage.getItem('token')) {
           targetPage = 'home';
-          shouldReplaceHistory = true; // Redirect to home for unknown path if logged in
+          shouldReplaceHistory = true;
         } else {
           targetPage = 'login';
-          shouldReplaceHistory = true; // Redirect to login for unknown path if not logged in
+          shouldReplaceHistory = true;
         }
       }
 
-      // Only replace history if explicitly marked or if the determined target page is different from the current URL
       if (shouldReplaceHistory && window.location.pathname !== pathForHistory(targetPage)) {
-        setCurrentPage(targetPage, true);
+        setCurrentPage(targetPage, true, detectedOrigin);
       } else {
         _setInternalCurrentPage(targetPage);
+        setEventDetailsOrigin(detectedOrigin);
       }
     };
 
-    // Helper to get the history path from the internal page name
     const pathForHistory = (page: string) => {
       if (page === 'home') return '/';
       if (page.startsWith('verify-email-route')) return `/auth/verify-email${window.location.search}`;
@@ -114,7 +127,7 @@ const BloomdayContainer: React.FC = () => {
       return `/${page}`;
     };
 
-    setPageFromUrl(); // Set initial page
+    setPageFromUrl();
 
     const handlePopState = () => {
       setPageFromUrl();
@@ -206,6 +219,7 @@ const BloomdayContainer: React.FC = () => {
     if (currentPage === 'login') return <LoginPage {...pageProps} />;
     if (currentPage === 'register') return <RegisterPage {...pageProps} />;
     if (currentPage === 'forgot-password') return <ForgotPasswordPage {...pageProps} />;
+    if (currentPage === 'account') return <AccountPage {...pageProps} />;
     if (currentPage.startsWith('reset-password/')) {
       const token = currentPage.split('/')[1];
       return <ResetPasswordPage setCurrentPage={setCurrentPage} token={token} />;
@@ -216,7 +230,7 @@ const BloomdayContainer: React.FC = () => {
     if (currentPage.startsWith('event-')) {
       const eventId = currentPage.replace('event-', '');
       const event = trendingEvents.find(e => e._id === eventId);
-      return <EventDetailsPage {...pageProps} event={event} />;
+      return <EventDetailsPage {...pageProps} event={event} fromMyEventsPage={eventDetailsOrigin === 'my-events'} />;
     }
     return <HomePage {...pageProps} upcomingEvents={upcomingEvents} />;
   };
@@ -240,11 +254,11 @@ const BloomdayContainer: React.FC = () => {
           .pb-20 { padding-bottom: 5rem; }
         }
       `}</style>
-      {(currentPage !== 'home' && currentPage !== 'login' && currentPage !== 'register' && !currentPage.startsWith('reset-password/') && currentPage !== 'forgot-password' && currentPage !== 'verify-email-route' && currentPage !== 'my-events') && <BackButton setCurrentPage={setCurrentPage} />}
+      {(currentPage !== 'home' && currentPage !== 'login' && currentPage !== 'register' && !currentPage.startsWith('reset-password/') && currentPage !== 'forgot-password' && currentPage !== 'verify-email-route' && currentPage !== 'my-events' && !currentPage.startsWith('event-') && currentPage !== 'account') && <BackButton setCurrentPage={setCurrentPage} />}
       <div className="pb-20 md:pb-0">
         {renderPage()}
       </div>
-      {(currentPage !== 'login' && currentPage !== 'register' && !currentPage.startsWith('reset-password/') && currentPage !== 'forgot-password' && currentPage !== 'verify-email-route' && currentPage !== 'my-events') && <MobileNav currentPage={currentPage} setCurrentPage={setCurrentPage} />}
+      {(currentPage !== 'login' && currentPage !== 'register' && !currentPage.startsWith('reset-password/') && currentPage !== 'forgot-password' && currentPage !== 'verify-email-route' && currentPage !== 'my-events' && !currentPage.startsWith('event-') && currentPage !== 'account') && <MobileNav currentPage={currentPage} setCurrentPage={setCurrentPage} />}
     </div>
   );
 };
