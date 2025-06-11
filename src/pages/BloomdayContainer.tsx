@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import MobileNav from '../components/layout/MobileNav';
 import BackButton from '../components/layout/BackButton';
 import HomePage from './HomePage';
@@ -22,7 +22,7 @@ interface DateRange {
 const eventTypes = ['Wedding', 'Birthday', 'Get Together', 'House Party', 'Festival', 'Conference', 'Workshop'];
 
 const BloomdayContainer: React.FC = () => {
-  const [currentPage, _setCurrentPage] = useState<string>('login');
+  const [currentPage, _setInternalCurrentPage] = useState<string>('login');
   const [trendingEvents, setTrendingEvents] = useState<Event[]>([]);
   const [myEvents, setMyEvents] = useState<Event[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -31,39 +31,103 @@ const BloomdayContainer: React.FC = () => {
     dateRange: { start: '', end: '' }
   });
 
-  const isInternalNavigationRef = useRef(false);
+  const setCurrentPage = (page: string, replaceHistory = false) => {
+    const newPath = page === 'home' ? '/' : `/${page}`;
+    let pathForHistory = newPath;
 
-  const setCurrentPage = (page: string, isInternal = false) => {
-    isInternalNavigationRef.current = isInternal;
-    _setCurrentPage(page);
+    if (page === 'verify-email-route') {
+      pathForHistory = `/auth/verify-email${window.location.search}`;
+    } else if (page.startsWith('reset-password/')) {
+      const token = page.split('/')[1];
+      pathForHistory = `/auth/reset-password/${token}`;
+    } else if (page === 'home') {
+      pathForHistory = '/';
+    } else if (page === 'login' || page === 'register' || page === 'forgot-password') {
+      pathForHistory = `/${page}`;
+    } else if (page.startsWith('event-')) {
+      const eventId = page.replace('event-', '');
+      pathForHistory = `/event/${eventId}`;
+    }
+
+    if (replaceHistory) {
+      window.history.replaceState(null, '', pathForHistory);
+    } else {
+      window.history.pushState(null, '', pathForHistory);
+    }
+    _setInternalCurrentPage(page);
   };
 
   useEffect(() => {
-    const path = window.location.pathname;
-    const search = window.location.search;
+    const setPageFromUrl = () => {
+      const path = window.location.pathname;
+      const search = window.location.search;
+      let targetPage = 'login'; // Default to login
+      let shouldReplaceHistory = false;
 
-    if (isInternalNavigationRef.current) {
-      isInternalNavigationRef.current = false; // Reset the flag
-      return; // Skip URL-based page setting
-    }
+      if (path === '/auth/verify-email' && search.includes('token=')) {
+        targetPage = 'verify-email-route';
+      } else if (path.startsWith('/auth/reset-password/') && path.split('/').length > 2) {
+        const token = path.split('/')[2];
+        targetPage = `reset-password/${token}`;
+      } else if (path === '/login' || path === '/register' || path === '/forgot-password') {
+        if (localStorage.getItem('token')) {
+          targetPage = 'home';
+          shouldReplaceHistory = true; // Redirect to home if already logged in
+        } else {
+          targetPage = path.substring(1);
+        }
+      } else if (path === '/') {
+        if (!localStorage.getItem('token')) {
+          targetPage = 'login';
+          shouldReplaceHistory = true; // Redirect to login if not logged in
+        } else {
+          targetPage = 'home';
+        }
+      } else {
+        const pageFromPath = path.substring(1);
+        const knownPages = ['create', 'browse', 'past', 'my-events'];
+        if (knownPages.includes(pageFromPath) || pageFromPath.startsWith('event-')) {
+          targetPage = pageFromPath;
+        } else if (localStorage.getItem('token')) {
+          targetPage = 'home';
+          shouldReplaceHistory = true; // Redirect to home for unknown path if logged in
+        } else {
+          targetPage = 'login';
+          shouldReplaceHistory = true; // Redirect to login for unknown path if not logged in
+        }
+      }
 
-    if (path === '/auth/verify-email' && search.includes('token=')) {
-      setCurrentPage('verify-email-route');
-    } else if (path.startsWith('/auth/reset-password/') && search.includes('token=')) {
-      const token = path.split('/')[3];
-      setCurrentPage(`reset-password/${token}`);
-    } else if (path === '/login') {
-      setCurrentPage('login');
-    } else if (path === '/register') {
-      setCurrentPage('register');
-    } else if (path === '/forgot-password') {
-      setCurrentPage('forgot-password');
-    } else if (localStorage.getItem('token')) { 
-      setCurrentPage('home');
-    } else {
-      setCurrentPage('login');
-    }
+      // Only replace history if explicitly marked or if the determined target page is different from the current URL
+      if (shouldReplaceHistory && window.location.pathname !== pathForHistory(targetPage)) {
+        setCurrentPage(targetPage, true);
+      } else {
+        _setInternalCurrentPage(targetPage);
+      }
+    };
 
+    // Helper to get the history path from the internal page name
+    const pathForHistory = (page: string) => {
+      if (page === 'home') return '/';
+      if (page.startsWith('verify-email-route')) return `/auth/verify-email${window.location.search}`;
+      if (page.startsWith('reset-password/')) return `/auth/reset-password/${page.split('/')[1]}`;
+      if (page.startsWith('event-')) return `/event/${page.replace('event-', '')}`;
+      return `/${page}`;
+    };
+
+    setPageFromUrl(); // Set initial page
+
+    const handlePopState = () => {
+      setPageFromUrl();
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
+
+  useEffect(() => {
     const fetchTrendingEvents = async () => {
       try {
         const token = localStorage.getItem('token');
