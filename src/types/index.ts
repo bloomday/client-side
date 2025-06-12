@@ -12,11 +12,15 @@ export interface Event {
   allowCrowdfunding: boolean;
   invitees: string[];
   ivImage: string | null;
-  gallery: any[];
   contributions: any[];
   __v: number;
   totalAmount?: number;
   contributors?: number;
   score?: number;
   views?: number;
+  gallery?: {
+    uploadedBy: string;
+    url: string;
+    uploadedAt: string;
+  }[];
 } 

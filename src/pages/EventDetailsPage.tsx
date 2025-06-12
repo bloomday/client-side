@@ -14,14 +14,18 @@ const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event, fromMyEvents
   const [flashMessageType, setFlashMessageType] = useState<'success' | 'error' | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isCurrentUserHost, setIsCurrentUserHost] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+
+  const userId = localStorage.getItem('userId');
+  const isCurrentUserAttendee = userId && event?.invitees.includes(userId);
+  const eventStarted = event ? new Date(event.date) < new Date() : false;
 
   useEffect(() => {
-    const userId = localStorage.getItem('userId');
     if (event?.hosts && userId) {
       const hostStatus = event.hosts.includes(userId);
       setIsCurrentUserHost(hostStatus);
     }
-  }, [event, fromMyEventsPage]);
+  }, [event, userId]);
 
   const handleCloseFlash = () => {
     setFlashMessage(null);
@@ -75,6 +79,65 @@ const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event, fromMyEvents
       }
     } catch (error: any) {
       console.error('Send invites error:', error);
+      setFlashMessage(error.message || 'Network error. Please try again later.');
+      setFlashMessageType('error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      const fileArray = Array.from(files) as File[];
+      setSelectedFiles(fileArray);
+    }
+  };
+
+  const handleImageUpload = async () => {
+    if (selectedFiles.length === 0) {
+      setFlashMessage('No files selected.');
+      setFlashMessageType('error');
+      return;
+    }
+
+    setIsLoading(true);
+    setFlashMessage(null);
+    setFlashMessageType(null);
+
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setFlashMessage('Authentication token not found. Please log in.');
+        setFlashMessageType('error');
+        setIsLoading(false);
+        return;
+      }
+
+      const formData = new FormData();
+      selectedFiles.forEach((file) => {
+        formData.append('images', file);
+      });
+
+      const response = await fetch('https://bloomday-server-side.onrender.com/upload-images', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setFlashMessage(data.message || 'Images uploaded successfully.');
+        setFlashMessageType('success');
+        setSelectedFiles([]); // Clear selected files after success
+      } else {
+        throw new Error(data.message || 'Failed to upload images.');
+      }
+    } catch (error: any) {
+      console.error('Upload images error:', error);
       setFlashMessage(error.message || 'Network error. Please try again later.');
       setFlashMessageType('error');
     } finally {
@@ -184,6 +247,51 @@ const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event, fromMyEvents
                       Share Event
                     </button>
                   )}
+                </div>
+              </div>
+            )}
+
+            {/* Image Upload Section */}
+            {isCurrentUserAttendee && eventStarted && (
+              <div className="bg-white rounded-lg shadow-md p-6 mt-6">
+                <h2 className="text-2xl font-bold text-gray-800 mb-4">Upload Event Images</h2>
+                <input 
+                  type="file" 
+                  multiple 
+                  accept="image/*" 
+                  onChange={handleFileChange} 
+                  className="w-full p-3 border rounded-lg bg-gray-100 text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 mb-4"
+                />
+                <button
+                  onClick={handleImageUpload}
+                  className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white py-3 px-6 rounded-lg font-semibold hover:from-green-600 hover:to-blue-600 transition-all"
+                  disabled={isLoading || !selectedFiles.length}
+                >
+                  {isLoading ? (
+                    <svg className="animate-spin h-5 w-5 text-white mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  ) : (
+                    'Upload Images'
+                  )}
+                </button>
+              </div>
+            )}
+
+            {/* Event Gallery Section */}
+            {event.gallery && event.gallery.length > 0 && (
+              <div className="bg-white rounded-lg shadow-md p-6 mt-6">
+                <h2 className="text-2xl font-bold text-gray-800 mb-4">Event Gallery</h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {event.gallery.map((img, index) => (
+                    <div key={index} className="relative group rounded-lg overflow-hidden">
+                      <img src={img.url} alt={`Event Gallery ${index + 1}`} className="w-full h-32 object-cover" />
+                      <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <p className="text-white text-xs text-center">Uploaded by {img.uploadedBy} on {new Date(img.uploadedAt).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
