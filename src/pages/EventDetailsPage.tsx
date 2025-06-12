@@ -167,7 +167,18 @@ const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event, fromMyEvents
                   </button>
                   {navigator.share && (
                     <button 
-                      onClick={() => navigator.share({ title: event.name, url: event.eventUrl })}
+                      onClick={async () => {
+                        try {
+                          await navigator.share({ title: event.name, url: event.eventUrl });
+                          console.log('Event shared successfully!');
+                        } catch (error: any) {
+                          if (error.name === 'AbortError') {
+                            console.log('Share canceled by user.');
+                          } else {
+                            console.error('Error sharing event:', error);
+                          }
+                        }
+                      }}
                       className="w-full bg-blue-500 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-600 transition-all mt-3"
                     >
                       Share Event
