@@ -15,8 +15,10 @@ const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event, fromMyEvents
   const [isLoading, setIsLoading] = useState(false);
   const [isCurrentUserHost, setIsCurrentUserHost] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [eventGalleryImages, setEventGalleryImages] = useState<Event['gallery']>([]);
 
   const userId = localStorage.getItem('userId');
+  const userName = JSON.parse(localStorage.getItem('user') || '{}').name;
   const isCurrentUserAttendee = userId && event?.invitees.includes(userId);
   const eventStarted = event ? new Date(event.date) < new Date() : false;
 
@@ -25,7 +27,40 @@ const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event, fromMyEvents
       const hostStatus = event.hosts.includes(userId);
       setIsCurrentUserHost(hostStatus);
     }
-  }, [event, userId]);
+
+    const fetchEventGallery = async () => {
+      if (!event?._id || !eventStarted) return;
+
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const response = await fetch(`http://localhost:3000/events/${event._id}/gallery`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setEventGalleryImages(data);
+        } else {
+          const errorData = await response.json();
+          console.error('Failed to fetch event gallery:', errorData);
+          setFlashMessage(errorData.message || 'Failed to load event gallery.');
+          setFlashMessageType('error');
+        }
+      } catch (error) {
+        console.error('Error fetching event gallery:', error);
+        setFlashMessage('Network error. Could not load event gallery.');
+        setFlashMessageType('error');
+      }
+    };
+
+    fetchEventGallery();
+  }, [event, userId, eventStarted]);
 
   const handleCloseFlash = () => {
     setFlashMessage(null);
@@ -95,15 +130,14 @@ const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event, fromMyEvents
   };
 
   const handleImageUpload = async () => {
-    if (selectedFiles.length === 0) {
-      setFlashMessage('No files selected.');
+    setFlashMessageType(null);
+
+    if (!event?._id) {
+      setFlashMessage('Event ID is missing for image upload.');
       setFlashMessageType('error');
+      setIsLoading(false);
       return;
     }
-
-    setIsLoading(true);
-    setFlashMessage(null);
-    setFlashMessageType(null);
 
     try {
       const token = localStorage.getItem('token');
@@ -118,8 +152,9 @@ const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event, fromMyEvents
       selectedFiles.forEach((file) => {
         formData.append('images', file);
       });
+      formData.append('uploadedBy', userName || 'Anonymous');
 
-      const response = await fetch('https://bloomday-server-side.onrender.com/upload-images', {
+      const response = await fetch(`http://localhost:3000/events/${event._id}/upload-multiple`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -280,11 +315,11 @@ const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event, fromMyEvents
             )}
 
             {/* Event Gallery Section */}
-            {event.gallery && event.gallery.length > 0 && (
+            {eventGalleryImages && eventGalleryImages.length > 0 && (
               <div className="bg-white rounded-lg shadow-md p-6 mt-6">
                 <h2 className="text-2xl font-bold text-gray-800 mb-4">Event Gallery</h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {event.gallery.map((img, index) => (
+                  {eventGalleryImages.map((img, index) => (
                     <div key={index} className="relative group rounded-lg overflow-hidden">
                       <img src={img.url} alt={`Event Gallery ${index + 1}`} className="w-full h-32 object-cover" />
                       <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
