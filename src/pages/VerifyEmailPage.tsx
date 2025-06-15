@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-// import { useParams } from 'react-router-dom'; // Use URLSearchParams for query token
+import { useNavigate } from 'react-router-dom';
 import FlashMessage from '../components/FlashMessage';
+import { apiCall } from '../utils/api';
 
 interface VerifyEmailPageProps {
-  setCurrentPage: (page: string, internal?: boolean) => void;
+  // setCurrentPage: (page: string, internal?: boolean) => void;
 }
 
-const VerifyEmailPage: React.FC<VerifyEmailPageProps> = ({ setCurrentPage }) => {
+const VerifyEmailPage: React.FC<VerifyEmailPageProps> = () => {
+  const navigate = useNavigate();
   // const [token, setToken] = useState<string | null>(null); // Removed as urlToken is used directly
   const [flashMessage, setFlashMessage] = useState<string | null>(null);
   const [flashMessageType, setFlashMessageType] = useState<'success' | 'error' | null>(null);
@@ -31,23 +33,27 @@ const VerifyEmailPage: React.FC<VerifyEmailPageProps> = ({ setCurrentPage }) => 
       }
 
       try {
-        const response = await fetch(`https://bloomday-server-side.onrender.com/verify-email?token=${urlToken}`);
-        const data = await response.json();
+        const response = await apiCall(
+          `https://bloomday-server-side.onrender.com/verify-email?token=${urlToken}`,
+          'GET',
+          undefined,
+          false // Email verification does not require an existing token
+        );
 
-        if (response.ok) {
-          setFlashMessage(data.message || "Email verified successfully! You can now log in.");
+        if (response.success) {
+          setFlashMessage(response.message || "Email verified successfully! You can now log in.");
           setFlashMessageType('success');
           setTimeout(() => {
-            setCurrentPage('login', true);
+            navigate('/login', { replace: true });
           }, 2000);
         } else {
-          console.error(data.message || "error: Email verification failed.");
-          setFlashMessage(data.message || "Email verification failed. Invalid or expired token.");
+          console.error(response.message || "error: Email verification failed.");
+          setFlashMessage(response.message || "Email verification failed. Invalid or expired token.");
           setFlashMessageType('error');
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Email verification error:', error);
-        setFlashMessage("Network error. Please try again later.");
+        setFlashMessage(error.message || "Network error. Please try again later.");
         setFlashMessageType('error');
       } finally {
         setIsLoading(false);
@@ -59,7 +65,7 @@ const VerifyEmailPage: React.FC<VerifyEmailPageProps> = ({ setCurrentPage }) => 
     } else {
       setIsLoading(false);
     }
-  }, [setCurrentPage]); // Depend on setCurrentPage as it's used inside useEffect
+  }, [navigate]); // Depend on navigate instead of setCurrentPage
 
   return (
     <div className="min-h-screen bg-[#14191f] py-8 px-4 flex flex-col items-center justify-center">
@@ -76,7 +82,7 @@ const VerifyEmailPage: React.FC<VerifyEmailPageProps> = ({ setCurrentPage }) => 
         )}
         <FlashMessage message={flashMessage} type={flashMessageType} onClose={handleCloseFlash} />
         {!isLoading && flashMessageType === 'error' && (
-          <button onClick={() => setCurrentPage('login')} className="mt-4 font-semibold text-purple-500 hover:underline">
+          <button onClick={() => navigate('/login')} className="mt-4 font-semibold text-purple-500 hover:underline">
             Back to Login
           </button>
         )}

@@ -1,26 +1,23 @@
 import React, { useState } from 'react';
-// import { useParams } from 'react-router-dom'; // Assuming react-router-dom for token from URL
+import { useNavigate } from 'react-router-dom';
 import FlashMessage from '../components/FlashMessage';
-import { Eye, EyeOff } from 'lucide-react'; // Import Eye icons
+import { Eye, EyeOff } from 'lucide-react';
+import { apiCall } from '../utils/api';
 
 interface ResetPasswordPageProps {
-  setCurrentPage: (page: string, internal?: boolean) => void;
+  // setCurrentPage: (page: string, internal?: boolean) => void;
   token: string; // Add token prop
 }
 
-const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ setCurrentPage, token }) => {
+const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ /* setCurrentPage, */ token }) => {
+  const navigate = useNavigate();
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [flashMessage, setFlashMessage] = useState<string | null>(null);
   const [flashMessageType, setFlashMessageType] = useState<'success' | 'error' | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false); // New state for new password visibility
-  const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false); // New state for confirm new password visibility
-
-  // In a real application, you'd get the token from the URL, e.g., using react-router-dom's useParams
-  // For now, we'll assume a placeholder token or a way to pass it.
-  // const { token } = useParams<{ token: string }>();
-  // const token = "PLACEHOLDER_RESET_TOKEN"; // Replaced by prop
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
 
   const handleCloseFlash = () => {
     setFlashMessage(null);
@@ -31,49 +28,46 @@ const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ setCurrentPage, t
     e.preventDefault();
     setFlashMessage(null);
     setFlashMessageType(null);
-    setIsLoading(true); // Set loading to true
+    setIsLoading(true);
 
     if (newPassword !== confirmNewPassword) {
       setFlashMessage("Passwords do not match!");
       setFlashMessageType('error');
-      setIsLoading(false); // Set loading to false if validation fails
+      setIsLoading(false);
       return;
     }
 
     if (!token) {
       setFlashMessage("Reset token is missing.");
       setFlashMessageType('error');
-      setIsLoading(false); // Set loading to false if token is missing
+      setIsLoading(false);
       return;
     }
 
     try {
-      const response = await fetch('https://bloomday-server-side.onrender.com/reset-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ token, newPassword }),
-      });
+      const response = await apiCall(
+        'https://bloomday-server-side.onrender.com/reset-password',
+        'POST',
+        { token, newPassword },
+        false // Does not require an existing token
+      );
 
-      const data = await response.json();
-
-      if (response.ok) {
-        setFlashMessage(data.message || "Password reset successfully!");
+      if (response.success) {
+        setFlashMessage(response.message || "Password reset successfully!");
         setFlashMessageType('success');
         setTimeout(() => {
-          setCurrentPage('login', true);
-        }, 1500); // Redirect after short delay
+          navigate('/login', { replace: true });
+        }, 1500);
       } else {
-        setFlashMessage(data.message || "Failed to reset password. Invalid or expired token.");
+        setFlashMessage(response.message || "Failed to reset password. Invalid or expired token.");
         setFlashMessageType('error');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Reset password error:', error);
-      setFlashMessage("Network error. Please try again later.");
+      setFlashMessage(error.message || "Network error. Please try again later.");
       setFlashMessageType('error');
     } finally {
-      setIsLoading(false); // Set loading to false regardless of success or error
+      setIsLoading(false);
     }
   };
 
@@ -141,7 +135,7 @@ const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ setCurrentPage, t
         <FlashMessage message={flashMessage} type={flashMessageType} onClose={handleCloseFlash} />
 
         <div className="mt-6 text-center">
-          <button onClick={() => setCurrentPage('login')} className="font-semibold text-purple-500 hover:underline" disabled={isLoading}>
+          <button onClick={() => navigate('/login')} className="font-semibold text-purple-500 hover:underline" disabled={isLoading}>
             Back to Login
           </button>
         </div>

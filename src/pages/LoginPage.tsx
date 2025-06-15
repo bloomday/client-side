@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import FlashMessage from '../components/FlashMessage';
 import { Eye, EyeOff } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { apiCall } from '../utils/api';
 
 interface LoginPageProps {
-  setCurrentPage: (page: string, internal?: boolean) => void;
+  // setCurrentPage: (page: string, internal?: boolean) => void;
 }
 
-const LoginPage: React.FC<LoginPageProps> = ({ setCurrentPage }) => {
+const LoginPage: React.FC<LoginPageProps> = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [flashMessage, setFlashMessage] = useState<string | null>(null);
@@ -26,42 +29,28 @@ const LoginPage: React.FC<LoginPageProps> = ({ setCurrentPage }) => {
     setIsLoading(true);
 
     try {
-      let data;
-    //   if (MOCK_LOGIN_SUCCESS) {
-    //     // Mock successful login response
-    //     data = {
-    //       user: {
-    //         _id: "mockUserId",
-    //         name: "Mock User",
-    //         email: "mock@example.com",
-    //         provider: "local",
-    //         isVerified: true,
-    //       },
-    //       token: "mockJWTToken",
-    //     };
-    //     await new Promise(resolve => setTimeout(resolve, 500)); // Simulate network delay
-    //   } else {
-        const response = await fetch('https://bloomday-server-side.onrender.com/signin', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ email, password }),
-        });
-        data = await response.json();
-        if (!response.ok) {
-          throw new Error(data.message || "Login failed");
-        }
-    //   }
+      const response = await apiCall(
+        'https://bloomday-server-side.onrender.com/signin',
+        'POST',
+        { email, password },
+        false // Login does not require an existing token
+      );
 
-      localStorage.setItem('user', JSON.stringify(data.user));
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('userId', data.user._id);
-      setFlashMessage("Login successful!");
-      setFlashMessageType('success');
-      setTimeout(() => {
-        setCurrentPage('home', true);
-      }, 1500);
+      if (response.success && response.data) {
+        const data = response.data as { user: any; token: string };
+        localStorage.setItem('user', JSON.stringify(data.user));
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('userId', data.user._id);
+        setFlashMessage("Login successful!");
+        setFlashMessageType('success');
+        setTimeout(() => {
+          console.log("Attempting to navigate to home page.");
+          navigate('/', { replace: true });
+        }, 1500);
+      } else {
+        setFlashMessage(response.message || "Login failed");
+        setFlashMessageType('error');
+      }
     } catch (error: any) {
       console.error('Login error:', error);
       setFlashMessage(error.message || "Network error. Please try again later.");
@@ -142,13 +131,13 @@ const LoginPage: React.FC<LoginPageProps> = ({ setCurrentPage }) => {
         </div>
 
         <div className="mt-6 text-center">
-          <button onClick={() => setCurrentPage('forgot-password')} className="font-semibold text-purple-500 hover:underline" disabled={isLoading}>
+          <button onClick={() => navigate('/forgot-password')} className="font-semibold text-purple-500 hover:underline" disabled={isLoading}>
             Forgot password?
           </button>
         </div>
 
         <p className={`mt-6 text-center text-sm text-[#9dadbe]`}>
-          Don't have an account? <button onClick={() => setCurrentPage('register')} className="font-semibold text-purple-500 hover:underline" disabled={isLoading}>
+          Don't have an account? <button onClick={() => navigate('/register')} className="font-semibold text-purple-500 hover:underline" disabled={isLoading}>
             Sign Up
           </button>
         </p>

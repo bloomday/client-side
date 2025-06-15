@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import FlashMessage from '../components/FlashMessage';
+import { useNavigate } from 'react-router-dom';
+import { apiCall } from '../utils/api';
 
 interface CreateEventPageProps {
-  setCurrentPage: (page: string) => void;
   eventTypes: string[];
 }
 
-const CreateEventPage: React.FC<CreateEventPageProps> = ({ setCurrentPage, eventTypes }) => {
+const CreateEventPage: React.FC<CreateEventPageProps> = ({ eventTypes }) => {
+  const navigate = useNavigate();
   const [name, setName] = useState('');
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
@@ -41,28 +43,25 @@ const CreateEventPage: React.FC<CreateEventPageProps> = ({ setCurrentPage, event
     const formData = new FormData();
     formData.append('name', name);
     formData.append('description', description);
-    formData.append('date', `${date}T${time}:00Z`); // Combine date and time to ISO format
+    formData.append('date', `${date}T${time}:00Z`);
     formData.append('location', location);
+    formData.append('type', type);
     formData.append('allowCrowdfunding', String(allowCrowdfunding));
     if (selectedImageFile) {
       formData.append('ivImage', selectedImageFile);
     }
 
     try {
-      const response = await fetch('https://bloomday-server-side.onrender.com/create-event', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-        body: formData,
-      });
+      const response = await apiCall(
+        'https://bloomday-server-side.onrender.com/create-event',
+        'POST',
+        formData,
+        true
+      );
 
-      const data = await response.json();
-
-      if (response.ok) {
-        setFlashMessage(data.message || "Event created successfully!");
+      if (response.success) {
+        setFlashMessage(response.message || "Event created successfully!");
         setFlashMessageType('success');
-        // Clear form fields
         setName('');
         setDate('');
         setTime('');
@@ -73,15 +72,15 @@ const CreateEventPage: React.FC<CreateEventPageProps> = ({ setCurrentPage, event
         setAllowCrowdfunding(false);
 
         setTimeout(() => {
-          setCurrentPage('home');
+          navigate('/my-events');
         }, 1500);
       } else {
-        setFlashMessage(data.message || "Failed to create event.");
+        setFlashMessage(response.message || "Failed to create event.");
         setFlashMessageType('error');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Create event error:', error);
-      setFlashMessage("Network error. Please try again later.");
+      setFlashMessage(error.message || "Network error. Please try again later.");
       setFlashMessageType('error');
     } finally {
       setIsLoading(false);
@@ -201,9 +200,9 @@ const CreateEventPage: React.FC<CreateEventPageProps> = ({ setCurrentPage, event
               )}
             </button>
           </form>
-          <FlashMessage message={flashMessage} type={flashMessageType} onClose={handleCloseFlash} />
         </div>
       </div>
+      <FlashMessage message={flashMessage} type={flashMessageType} onClose={handleCloseFlash} />
     </div>
   );
 };

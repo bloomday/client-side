@@ -1,59 +1,56 @@
 import React, { useState } from 'react';
-// import { useNavigate } from 'react-router-dom'; // Placeholder for navigation
+import { useNavigate } from 'react-router-dom';
+import { apiCall } from '../utils/api';
 
 interface AccountPageProps {
-  setCurrentPage: (page: string, replaceHistory?: boolean) => void;
+  // setCurrentPage: (page: string, replaceHistory?: boolean) => void;
 }
 
-const AccountPage: React.FC<AccountPageProps> = ({ setCurrentPage }) => {
-  // Placeholder for user data. In a real app, this would come from context or a global state.
+const AccountPage: React.FC<AccountPageProps> = () => {
+  const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogout = async () => {
     setIsLoading(true);
-    const token = localStorage.getItem('token');
+    // The token is now handled internally by apiCall if requiresAuth is true
 
     if (!user.email || !user.password) {
-      // In a real app, password wouldn't be stored. This is based on the curl command.
       console.error('Email or password not available for logout.');
       setIsLoading(false);
-      // Proceed with local logout even if API call can't be made as per curl command requirements
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       localStorage.removeItem('userId');
-      setCurrentPage('login', true);
+      navigate('/login');
       return;
     }
 
     try {
-      const response = await fetch('https://bloomday-server-side.onrender.com/logout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
+      const response = await apiCall(
+        'https://bloomday-server-side.onrender.com/logout',
+        'POST',
+        {
           email: user.email,
           password: user.password,
-        }),
-      });
+        },
+        true // requiresAuth is true
+      );
 
-      if (response.ok) {
+      if (response.success) {
         console.log('Logout successful');
       } else {
-        const errorData = await response.json();
-        console.error('Logout failed:', errorData);
+        console.error('Logout failed:', response.message);
       }
     } catch (error) {
       console.error('Error during logout API call:', error);
     } finally {
       setIsLoading(false);
-      // Always clear local storage and redirect regardless of API success/failure for UX
+      // apiCall handles clearing local storage and redirecting on 401. 
+      // For other cases, ensure local logout for UX.
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       localStorage.removeItem('userId');
-      setCurrentPage('login', true);
+      navigate('/login');
     }
   };
 

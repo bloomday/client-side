@@ -13,7 +13,9 @@ import ResetPasswordPage from './ResetPasswordPage';
 import VerifyEmailPage from './VerifyEmailPage';
 import MyEventsPage from './MyEventsPage';
 import AccountPage from './AccountPage';
-import { Event } from '../types';
+import { Event } from '../types/index';
+import { apiCall } from '../utils/api';
+import { useLocation, Routes, Route, useNavigate, useParams } from 'react-router-dom';
 
 interface DateRange {
   start: string;
@@ -23,181 +25,59 @@ interface DateRange {
 const eventTypes = ['Wedding', 'Birthday', 'Get Together', 'House Party', 'Festival', 'Conference', 'Workshop'];
 
 const BloomdayContainer: React.FC = () => {
-  const [currentPage, _setInternalCurrentPage] = useState<string>('login');
-  const [trendingEvents, setTrendingEvents] = useState<Event[]>([]);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [trendingEvents, setTrendingEvents] = useState<{ trending: Event[] }>({ trending: [] });
   const [myEvents, setMyEvents] = useState<Event[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedFilters, setSelectedFilters] = useState<{ type: string; dateRange: DateRange }>({
     type: '',
     dateRange: { start: '', end: '' }
   });
-  const [eventDetailsOrigin, setEventDetailsOrigin] = useState<'home' | 'my-events' | 'browse' | undefined>(undefined);
-
-  const setCurrentPage = (page: string, replaceHistory = false, origin?: 'home' | 'my-events' | 'browse') => {
-    const newPath = page === 'home' ? '/' : `/${page}`;
-    let pathForHistory = newPath;
-
-    if (page === 'verify-email-route') {
-      pathForHistory = `/auth/verify-email${window.location.search}`;
-    } else if (page.startsWith('reset-password/')) {
-      const token = page.split('/')[1];
-      pathForHistory = `/auth/reset-password/${token}`;
-    } else if (page === 'home') {
-      pathForHistory = '/';
-    } else if (page === 'login' || page === 'register' || page === 'forgot-password') {
-      pathForHistory = `/${page}`;
-    } else if (page.startsWith('event-')) {
-      const eventId = page.replace('event-', '');
-      pathForHistory = `/event/${eventId}`;
-      setEventDetailsOrigin(origin || undefined);
-    } else {
-      setEventDetailsOrigin(undefined);
-    }
-
-    if (replaceHistory) {
-      window.history.replaceState(null, '', pathForHistory);
-    } else {
-      window.history.pushState(null, '', pathForHistory);
-    }
-    _setInternalCurrentPage(page);
-  };
-
-  useEffect(() => {
-    const setPageFromUrl = () => {
-      const path = window.location.pathname;
-      const search = window.location.search;
-      let targetPage = 'login';
-      let shouldReplaceHistory = false;
-      let detectedOrigin: 'home' | 'my-events' | 'browse' | undefined = undefined;
-
-      if (path === '/auth/verify-email' && search.includes('token=')) {
-        targetPage = 'verify-email-route';
-      } else if (path.startsWith('/auth/reset-password/') && path.split('/').length > 2) {
-        const token = path.split('/')[2];
-        targetPage = `reset-password/${token}`;
-      } else if (path === '/login' || path === '/register' || path === '/forgot-password') {
-        if (localStorage.getItem('token')) {
-          targetPage = 'home';
-          shouldReplaceHistory = true;
-        } else {
-          targetPage = path.substring(1);
-        }
-      } else if (path === '/') {
-        if (!localStorage.getItem('token')) {
-          targetPage = 'login';
-          shouldReplaceHistory = true;
-        } else {
-          targetPage = 'home';
-        }
-      } else if (path.startsWith('/event/')) {
-        targetPage = `event-${path.split('/')[2]}`;
-        detectedOrigin = undefined;
-      } else {
-        const pageFromPath = path.substring(1);
-        const knownPages = ['create', 'browse', 'past', 'my-events'];
-        if (knownPages.includes(pageFromPath)) {
-          targetPage = pageFromPath;
-          if (pageFromPath === 'my-events') {
-            detectedOrigin = 'my-events';
-          } else if (pageFromPath === 'browse') {
-            detectedOrigin = 'browse';
-          }
-        } else if (localStorage.getItem('token')) {
-          targetPage = 'home';
-          shouldReplaceHistory = true;
-        } else {
-          targetPage = 'login';
-          shouldReplaceHistory = true;
-        }
-      }
-
-      if (shouldReplaceHistory && window.location.pathname !== pathForHistory(targetPage)) {
-        setCurrentPage(targetPage, true, detectedOrigin);
-      } else {
-        _setInternalCurrentPage(targetPage);
-        setEventDetailsOrigin(detectedOrigin);
-      }
-    };
-
-    const pathForHistory = (page: string) => {
-      if (page === 'home') return '/';
-      if (page.startsWith('verify-email-route')) return `/auth/verify-email${window.location.search}`;
-      if (page.startsWith('reset-password/')) return `/auth/reset-password/${page.split('/')[1]}`;
-      if (page.startsWith('event-')) return `/event/${page.replace('event-', '')}`;
-      return `/${page}`;
-    };
-
-    setPageFromUrl();
-
-    const handlePopState = () => {
-      setPageFromUrl();
-    };
-
-    window.addEventListener('popstate', handlePopState);
-
-    return () => {
-      window.removeEventListener('popstate', handlePopState);
-    };
-  }, []);
 
   useEffect(() => {
     const fetchTrendingEvents = async () => {
       try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          console.warn("No token found for fetching trending events.");
-          return;
-        }
-
-        const response = await fetch('https://bloomday-server-side.onrender.com/events/trending', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-
-        if (response.ok) {
-          const result = await response.json();
-          setTrendingEvents(result.trending || []);
+        const response = await apiCall<{ trending: Event[] }>('https://bloomday-server-side.onrender.com/events/trending', 'GET', undefined, true);
+        if (response.success && response.data) {
+          setTrendingEvents(response.data);
+          console.log("All Trending Events Dates:", response.data.trending.map(event => event.date));
+          console.log("Current Date for comparison:", new Date());
         } else {
-          console.error("Failed to fetch trending events:", response.status, response.statusText);
+          console.error("Failed to fetch trending events:", response.message);
+          setTrendingEvents({ trending: [] });
         }
       } catch (error) {
         console.error("Error fetching trending events:", error);
+        setTrendingEvents({ trending: [] });
       }
     };
 
     const fetchMyEvents = async () => {
       try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          console.warn("No token found for fetching user's events.");
-          return;
-        }
-
-        const response = await fetch('https://bloomday-server-side.onrender.com/my-events', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-
-        if (response.ok) {
-          const result = await response.json();
-          setMyEvents(result.events || []);
+        const response = await apiCall<{ events: Event[] }>('https://bloomday-server-side.onrender.com/my-events', 'GET', undefined, true);
+        if (response.success && response.data) {
+          console.log("My Events API response data:", response.data);
+          setMyEvents(response.data.events);
         } else {
-          console.error("Failed to fetch user's events:", response.status, response.statusText);
+          console.error("Failed to fetch user's events:", response.message);
+          setMyEvents([]);
         }
       } catch (error) {
         console.error("Error fetching user's events:", error);
+        setMyEvents([]);
       }
     };
 
     if (localStorage.getItem('token')) {
       fetchTrendingEvents();
       fetchMyEvents();
+    } else {
+      navigate('/login', { replace: true });
     }
-  }, [currentPage]);
+  }, [location.pathname, navigate]);
 
-  const filteredEvents = trendingEvents.filter(event => {
+  const filteredEvents = (Array.isArray(trendingEvents.trending) ? trendingEvents.trending : []).filter(event => {
     const matchesSearch = event.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       event.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesType = !selectedFilters.type || event.type === selectedFilters.type;
@@ -206,37 +86,85 @@ const BloomdayContainer: React.FC = () => {
     return matchesSearch && matchesType && matchesDate;
   });
 
-  const upcomingEvents = trendingEvents.filter(event => new Date(event.date) > new Date());
-  const pastEvents = trendingEvents.filter(event => new Date(event.date) <= new Date());
+  const upcomingEvents = (Array.isArray(trendingEvents.trending) ? trendingEvents.trending : []);
+  console.log("Upcoming Events after filter:", upcomingEvents);
+  const pastEvents = (Array.isArray(trendingEvents.trending) ? trendingEvents.trending : []).filter(event => new Date(event.date) <= new Date());
 
   const renderPage = () => {
-    const pageProps = { setCurrentPage };
-    if (currentPage === 'home') return <HomePage {...pageProps} upcomingEvents={upcomingEvents} />;
-    if (currentPage === 'create') return <CreateEventPage {...pageProps} eventTypes={eventTypes} />;
-    if (currentPage === 'browse') return <BrowseEventsPage {...pageProps} filteredEvents={filteredEvents} searchQuery={searchQuery} setSearchQuery={setSearchQuery} selectedFilters={selectedFilters} setSelectedFilters={setSelectedFilters} eventTypes={eventTypes} />;
-    if (currentPage === 'past') return <PastEventsPage {...pageProps} pastEvents={pastEvents} />;
-    if (currentPage === 'my-events') return <MyEventsPage {...pageProps} myEvents={myEvents} />;
-    if (currentPage === 'login') return <LoginPage {...pageProps} />;
-    if (currentPage === 'register') return <RegisterPage {...pageProps} />;
-    if (currentPage === 'forgot-password') return <ForgotPasswordPage {...pageProps} />;
-    if (currentPage === 'account') return <AccountPage {...pageProps} />;
-    if (currentPage.startsWith('reset-password/')) {
-      const token = currentPage.split('/')[1];
-      return <ResetPasswordPage setCurrentPage={setCurrentPage} token={token} />;
-    }
-    if (currentPage === 'verify-email-route') {
-      return <VerifyEmailPage setCurrentPage={setCurrentPage} />;
-    }
-    if (currentPage.startsWith('event-')) {
-      const eventId = currentPage.replace('event-', '');
-      const event = trendingEvents.find(e => e._id === eventId);
-      return <EventDetailsPage {...pageProps} event={event} fromMyEventsPage={eventDetailsOrigin === 'my-events'} />;
-    }
-    return <HomePage {...pageProps} upcomingEvents={upcomingEvents} />;
+    console.log("Current trendingEvents before filter:", trendingEvents);
+    return (
+      <Routes>
+        <Route path="/" element={<HomePage upcomingEvents={upcomingEvents} />} />
+        <Route path="/create" element={<CreateEventPage eventTypes={eventTypes} />} />
+        <Route path="/browse" element={<BrowseEventsPage filteredEvents={filteredEvents} searchQuery={searchQuery} setSearchQuery={setSearchQuery} selectedFilters={selectedFilters} setSelectedFilters={setSelectedFilters} eventTypes={eventTypes} />} />
+        <Route path="/past" element={<PastEventsPage pastEvents={pastEvents} />} />
+        <Route path="/my-events" element={<MyEventsPage myEvents={myEvents} />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/account" element={<AccountPage />} />
+        <Route path="/reset-password/:token" element={<ResetPasswordPageWrapper />} />
+        <Route path="/auth/verify-email" element={<VerifyEmailPage />} />
+        <Route path="/event/:id" element={<EventDetailsPageWrapper />} />
+        <Route path="*" element={<LoginPage />} />
+      </Routes>
+    );
   };
 
+  // Wrapper component to pass the token to ResetPasswordPage
+  const ResetPasswordPageWrapper: React.FC = () => {
+    const { token } = useParams<{ token: string }>();
+    if (!token) {
+      return <LoginPage />; // Redirect to login if token is missing
+    }
+    return <ResetPasswordPage token={token} />;
+  };
+
+  const EventDetailsPageWrapper: React.FC = () => {
+    const { id } = useParams<{ id: string }>();
+    const [event, setEvent] = useState<Event | null>(null);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+      const fetchEvent = async () => {
+        if (!id) {
+          console.error("Event ID is missing.");
+          navigate('/');
+          return;
+        }
+        try {
+          const response = await apiCall<Event>(`https://bloomday-server-side.onrender.com/events/${id}`, 'GET', undefined, true);
+          if (response.success && response.data) {
+            setEvent(response.data);
+          } else {
+            console.error("Failed to fetch event details:", response.message);
+            navigate('/');
+          }
+        } catch (error) {
+          console.error("Error fetching event details:", error);
+          navigate('/');
+        }
+      };
+      fetchEvent();
+    }, [id, navigate]);
+
+    if (!event) {
+      return (
+        <div className="min-h-screen bg-[#14191f] flex items-center justify-center">
+          <svg className="animate-spin h-8 w-8 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        </div>
+      ); // Or a loading spinner
+    }
+    return <EventDetailsPage event={event} fromMyEventsPage={false} />;
+  };
+
+  const isAuthPage = location.pathname === '/login' || location.pathname === '/register' || location.pathname.startsWith('/reset-password/') || location.pathname === '/forgot-password' || location.pathname === '/auth/verify-email';
+
   return (
-    <div className={'min-h-screen bg-[#14191f]'}>
+    <div className={'bg-[#14191f]'}>
       <style>{`
         .line-clamp-2 {
           display: -webkit-box;
@@ -254,11 +182,11 @@ const BloomdayContainer: React.FC = () => {
           .pb-20 { padding-bottom: 5rem; }
         }
       `}</style>
-      {(currentPage !== 'home' && currentPage !== 'login' && currentPage !== 'register' && !currentPage.startsWith('reset-password/') && currentPage !== 'forgot-password' && currentPage !== 'verify-email-route' && currentPage !== 'my-events' && !currentPage.startsWith('event-') && currentPage !== 'account') && <BackButton setCurrentPage={setCurrentPage} />}
+      {!isAuthPage && location.pathname !== '/' && <BackButton />}
       <div className="pb-20 md:pb-0">
         {renderPage()}
       </div>
-      {(currentPage !== 'login' && currentPage !== 'register' && !currentPage.startsWith('reset-password/') && currentPage !== 'forgot-password' && currentPage !== 'verify-email-route' && currentPage !== 'my-events' && !currentPage.startsWith('event-') && currentPage !== 'account') && <MobileNav currentPage={currentPage} setCurrentPage={setCurrentPage} />}
+      {!isAuthPage && <MobileNav />}
     </div>
   );
 };

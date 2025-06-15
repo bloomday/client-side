@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import FlashMessage from '../components/FlashMessage';
 import { Eye, EyeOff } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { apiCall } from '../utils/api';
 
 interface RegisterPageProps {
-  setCurrentPage: (page: string, internal?: boolean) => void;
+  // setCurrentPage: (page: string, internal?: boolean) => void;
 }
 
-const RegisterPage: React.FC<RegisterPageProps> = ({ setCurrentPage }) => {
+const RegisterPage: React.FC<RegisterPageProps> = () => {
+  const navigate = useNavigate();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -26,42 +29,39 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ setCurrentPage }) => {
     e.preventDefault();
     setFlashMessage(null);
     setFlashMessageType(null);
-    setIsLoading(true); // Set loading to true
+    setIsLoading(true);
 
     if (password !== confirmPassword) {
       setFlashMessage("Passwords do not match!");
       setFlashMessageType('error');
-      setIsLoading(false); // Set loading to false if validation fails
+      setIsLoading(false);
       return;
     }
 
     try {
-      const response = await fetch('https://bloomday-server-side.onrender.com/signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name, email, password }),
-      });
+      const response = await apiCall(
+        'https://bloomday-server-side.onrender.com/signup',
+        'POST',
+        { name, email, password },
+        false // Registration does not require an existing token
+      );
 
-      const data = await response.json();
-
-      if (response.ok) {
-        setFlashMessage(data.message || "Registration successful! Please check your email.");
+      if (response.success) {
+        setFlashMessage(response.message || "Registration successful! Please check your email.");
         setFlashMessageType('success');
         setTimeout(() => {
-          setCurrentPage('login', true);
-        }, 1500); // Redirect after short delay
+          navigate('/login', { replace: true });
+        }, 1500);
       } else {
-        setFlashMessage(data.message || "Registration failed. Please try again.");
+        setFlashMessage(response.message || "Registration failed. Please try again.");
         setFlashMessageType('error');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Registration error:', error);
-      setFlashMessage("Network error. Please try again later.");
+      setFlashMessage(error.message || "Network error. Please try again later.");
       setFlashMessageType('error');
     } finally {
-      setIsLoading(false); // Set loading to false regardless of success or error
+      setIsLoading(false);
     }
   };
 
@@ -167,7 +167,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ setCurrentPage }) => {
         </div>
 
         <p className={`mt-6 text-center text-sm text-[#9dadbe]`}>
-          Already have an account? <button onClick={() => setCurrentPage('login')} className="font-semibold text-purple-500 hover:underline" disabled={isLoading}>
+          Already have an account? <button onClick={() => navigate('/login')} className="font-semibold text-purple-500 hover:underline" disabled={isLoading}>
             Log In
           </button>
         </p>

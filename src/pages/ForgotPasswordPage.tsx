@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import FlashMessage from '../components/FlashMessage';
+import { useNavigate } from 'react-router-dom';
+import { apiCall } from '../utils/api';
 
 interface ForgotPasswordPageProps {
-  setCurrentPage: (page: string, internal?: boolean) => void;
+  // setCurrentPage: (page: string, internal?: boolean) => void;
 }
 
-const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({ setCurrentPage }) => {
+const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [flashMessage, setFlashMessage] = useState<string | null>(null);
   const [flashMessageType, setFlashMessageType] = useState<'success' | 'error' | null>(null);
@@ -23,26 +26,23 @@ const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({ setCurrentPage 
     setIsLoading(true);
 
     try {
-      const response = await fetch('https://bloomday-server-side.onrender.com/forgot-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
-      });
+      const response = await apiCall(
+        'https://bloomday-server-side.onrender.com/forgot-password',
+        'POST',
+        { email },
+        false // Does not require an existing token
+      );
 
-      const data = await response.json();
-
-      if (response.ok) {
-        setFlashMessage(data.message || "Reset link sent to your email.");
+      if (response.success) {
+        setFlashMessage(response.message || "Reset link sent to your email.");
         setFlashMessageType('success');
       } else {
-        setFlashMessage(data.message || "Failed to send reset link.");
+        setFlashMessage(response.message || "Failed to send reset link.");
         setFlashMessageType('error');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Forgot password error:', error);
-      setFlashMessage("Network error. Please try again later.");
+      setFlashMessage(error.message || "Network error. Please try again later.");
       setFlashMessageType('error');
     } finally {
       setIsLoading(false);
@@ -84,7 +84,7 @@ const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({ setCurrentPage 
         <FlashMessage message={flashMessage} type={flashMessageType} onClose={handleCloseFlash} />
 
         <div className="mt-6 text-center">
-          <button onClick={() => setCurrentPage('login', true)} className="font-semibold text-purple-500 hover:underline" disabled={isLoading}>
+          <button onClick={() => navigate('/login', { replace: true })} className="font-semibold text-purple-500 hover:underline" disabled={isLoading}>
             Back to Login
           </button>
         </div>
