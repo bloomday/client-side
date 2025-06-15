@@ -27,7 +27,7 @@ const AccountPage: React.FC<AccountPageProps> = ({ setCurrentPage }) => {
     }
 
     try {
-      const response = await fetch('http://localhost:3000/logout', {
+      const response = await fetch('https://bloomday-server-side.onrender.com/logout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
