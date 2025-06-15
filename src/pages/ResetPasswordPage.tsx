@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 // import { useParams } from 'react-router-dom'; // Assuming react-router-dom for token from URL
 import FlashMessage from '../components/FlashMessage';
+import { Eye, EyeOff } from 'lucide-react'; // Import Eye icons
 
 interface ResetPasswordPageProps {
   setCurrentPage: (page: string, internal?: boolean) => void;
@@ -13,6 +14,8 @@ const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ setCurrentPage, t
   const [flashMessage, setFlashMessage] = useState<string | null>(null);
   const [flashMessageType, setFlashMessageType] = useState<'success' | 'error' | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false); // New state for new password visibility
+  const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false); // New state for confirm new password visibility
 
   // In a real application, you'd get the token from the URL, e.g., using react-router-dom's useParams
   // For now, we'll assume a placeholder token or a way to pass it.
@@ -85,25 +88,43 @@ const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ setCurrentPage, t
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className={`block text-sm font-medium mb-2 text-[#9dadbe]`}>New Password</label>
-            <input
-              type="password"
-              required
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="Enter new password"
-              className={inputClasses}
-            />
+            <div className="relative">
+              <input
+                type={showNewPassword ? "text" : "password"}
+                required
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Enter new password"
+                className={inputClasses}
+              />
+              <button
+                type="button"
+                onClick={() => setShowNewPassword(!showNewPassword)}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#9dadbe]"
+              >
+                {showNewPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
           </div>
           <div>
             <label className={`block text-sm font-medium mb-2 text-[#9dadbe]`}>Confirm New Password</label>
-            <input
-              type="password"
-              required
-              value={confirmNewPassword}
-              onChange={(e) => setConfirmNewPassword(e.target.value)}
-              placeholder="Confirm new password"
-              className={inputClasses}
-            />
+            <div className="relative">
+              <input
+                type={showConfirmNewPassword ? "text" : "password"}
+                required
+                value={confirmNewPassword}
+                onChange={(e) => setConfirmNewPassword(e.target.value)}
+                placeholder="Confirm new password"
+                className={inputClasses}
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmNewPassword(!showConfirmNewPassword)}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#9dadbe]"
+              >
+                {showConfirmNewPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
           </div>
           <button type="submit" className={buttonClasses} disabled={isLoading}>
             {isLoading ? (

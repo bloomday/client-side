@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import FlashMessage from '../components/FlashMessage';
+import { Eye, EyeOff } from 'lucide-react';
 
 interface RegisterPageProps {
   setCurrentPage: (page: string, internal?: boolean) => void;
@@ -13,6 +14,8 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ setCurrentPage }) => {
   const [flashMessage, setFlashMessage] = useState<string | null>(null);
   const [flashMessageType, setFlashMessageType] = useState<'success' | 'error' | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleCloseFlash = () => {
     setFlashMessage(null);
@@ -97,25 +100,43 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ setCurrentPage }) => {
           </div>
           <div>
             <label className={`block text-sm font-medium mb-2 text-[#9dadbe]`}>Password</label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
-              className={inputClasses}
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password"
+                className={inputClasses}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm text-[#9dadbe]"
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
           </div>
           <div>
             <label className={`block text-sm font-medium mb-2 text-[#9dadbe]`}>Confirm Password</label>
-            <input
-              type="password"
-              required
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Confirm your password"
-              className={inputClasses}
-            />
+            <div className="relative">
+              <input
+                type={showConfirmPassword ? 'text' : 'password'}
+                required
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirm your password"
+                className={inputClasses}
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm text-[#9dadbe]"
+              >
+                {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
           </div>
           <button type="submit" className={buttonClasses} disabled={isLoading}>
             {isLoading ? (

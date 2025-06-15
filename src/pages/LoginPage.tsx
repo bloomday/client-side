@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import FlashMessage from '../components/FlashMessage';
+import { Eye, EyeOff } from 'lucide-react';
 
 interface LoginPageProps {
   setCurrentPage: (page: string, internal?: boolean) => void;
@@ -11,6 +12,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ setCurrentPage }) => {
   const [flashMessage, setFlashMessage] = useState<string | null>(null);
   const [flashMessageType, setFlashMessageType] = useState<'success' | 'error' | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleCloseFlash = () => {
     setFlashMessage(null);
@@ -93,14 +95,23 @@ const LoginPage: React.FC<LoginPageProps> = ({ setCurrentPage }) => {
           </div>
           <div>
             <label className={`block text-sm font-medium mb-2 text-[#9dadbe]`}>Password</label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
-              className={inputClasses}
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password"
+                className={inputClasses}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#9dadbe]"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
           </div>
           <button type="submit" className={buttonClasses} disabled={isLoading}>
             {isLoading ? (
