@@ -16,6 +16,7 @@ import AccountPage from './AccountPage';
 import { Event } from '../types/index';
 import { apiCall } from '../utils/api';
 import { useLocation, Routes, Route, useNavigate, useParams } from 'react-router-dom';
+import InvitationResponsePage from './InvitationResponsePage';
 
 interface DateRange {
   start: string;
@@ -105,6 +106,7 @@ const BloomdayContainer: React.FC = () => {
         <Route path="/account" element={<AccountPage />} />
         <Route path="/reset-password/:token" element={<ResetPasswordPageWrapper />} />
         <Route path="/auth/verify-email" element={<VerifyEmailPage />} />
+        <Route path="/invite/:action/:id" element={<InvitationResponsePage />} />
         <Route path="/event/:id" element={<EventDetailsPageWrapper />} />
         <Route path="*" element={<LoginPage />} />
       </Routes>
