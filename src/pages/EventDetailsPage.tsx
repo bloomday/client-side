@@ -5,10 +5,10 @@ import FlashMessage from '../components/FlashMessage';
 
 interface EventDetailsPageProps {
   event: Event | undefined;
-  fromMyEventsPage?: boolean;
+  // fromMyEventsPage?: boolean;
 }
 
-const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event, fromMyEventsPage }) => {
+const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event /*, fromMyEventsPage */ }) => {
   const [inviteEmails, setInviteEmails] = useState('');
   const [flashMessage, setFlashMessage] = useState<string | null>(null);
   const [flashMessageType, setFlashMessageType] = useState<'success' | 'error' | null>(null);
@@ -17,15 +17,18 @@ const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event, fromMyEvents
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [eventGalleryImages, setEventGalleryImages] = useState<Event['gallery']>([]);
 
+  console.log('EventDetailsPage - event prop:', event);
+
   const userId = localStorage.getItem('userId');
   const userName = JSON.parse(localStorage.getItem('user') || '{}').name;
-  const isCurrentUserAttendee = userId && event?.invitees.includes(userId);
-  const eventStarted = event ? new Date(event.date) < new Date() : false;
+  const isCurrentUserAttendee = userId && event && (event.invitees || []).includes(userId);
+  const eventStarted = event && new Date(event.date) < new Date();
 
   useEffect(() => {
-    if (event?.hosts && userId) {
-      const hostStatus = event.hosts.includes(userId);
-      setIsCurrentUserHost(hostStatus);
+    if (userId && event?.hosts && (event.hosts || []).some(host => host._id === userId)) {
+      setIsCurrentUserHost(true);
+    } else {
+      setIsCurrentUserHost(false);
     }
 
     const fetchEventGallery = async () => {
@@ -198,7 +201,7 @@ const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event, fromMyEvents
         <div className="absolute inset-0 bg-black bg-opacity-40 flex items-end">
           <div className="p-6 text-white">
             <h1 className="text-3xl md:text-5xl font-bold mb-2">{event.name}</h1>
-            <p className="text-lg opacity-90">Hosted by {event.hosts[0] || 'N/A'}</p>
+            <p className="text-lg opacity-90">Hosted by {event.hosts && event.hosts.length > 0 ? event.hosts.map(host => host.name).join(', ') : 'N/A'}</p>
           </div>
         </div>
       </div>
@@ -210,21 +213,21 @@ const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event, fromMyEvents
               <p className="text-gray-700 leading-relaxed">{event.description}</p>
             </div>
             <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-2xl font-bold text-gray-800 mb-4">Attendees ({event.invitees ? event.invitees.length : 0})</h2>
+              <h2 className="text-2xl font-bold text-gray-800 mb-4">Attendees ({(event.invitees || []).length})</h2>
               <div className="flex flex-wrap gap-2">
-                {[...Array(Math.min(event.invitees ? event.invitees.length : 0, 20))].map((_, i) => (
+                {[...Array(Math.min((event.invitees || []).length, 20))].map((_, i) => (
                   <div key={i} className="w-10 h-10 bg-gradient-to-r from-purple-400 to-teal-400 rounded-full flex items-center justify-center text-white font-semibold">
                     {String.fromCharCode(65 + (i % 26))}
                   </div>
                 ))}
-                {(event.invitees ? event.invitees.length : 0) > 20 && (
+                {((event.invitees || []).length) > 20 && (
                   <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center text-gray-600 font-semibold">
-                    +{(event.invitees ? event.invitees.length : 0) - 20}
+                    +{((event.invitees || []).length) - 20}
                   </div>
                 )}
               </div>
             </div>
-            {isCurrentUserHost && fromMyEventsPage && (
+            {isCurrentUserHost && (
               <div className="bg-white rounded-lg shadow-md p-6 mt-6">
                 <h2 className="text-2xl font-bold text-gray-800 mb-4">Send Invites</h2>
                 <textarea
@@ -252,7 +255,7 @@ const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event, fromMyEvents
             )}
 
             {/* QR Code and Share Section */}
-            {isCurrentUserHost && fromMyEventsPage && event.qrCode && (
+            {isCurrentUserHost && event.qrCode && (
               <div className="bg-white rounded-lg shadow-md p-6 mt-6">
                 <h2 className="text-2xl font-bold text-gray-800 mb-4">Event QR Code</h2>
                 <div className="flex flex-col items-center">
@@ -359,7 +362,7 @@ const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event, fromMyEvents
                   <User className="w-5 h-5 mr-3 text-purple-600" />
                   <div>
                     <p className="font-semibold">Host</p>
-                    <p>{event.hosts[0] || 'N/A'}</p>
+                    <p>{event.hosts && event.hosts.length > 0 ? event.hosts.map(host => host.name).join(', ') : 'N/A'}</p>
                   </div>
                 </div>
               </div>

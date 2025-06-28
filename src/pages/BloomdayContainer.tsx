@@ -133,11 +133,12 @@ const BloomdayContainer: React.FC = () => {
           return;
         }
         try {
-          const response = await apiCall<Event>(`https://bloomday-server-side.onrender.com/events/${id}`, 'GET', undefined, true);
+          const response = await apiCall<{ event: Event, totalAmount: number }>(`https://bloomday-server-side.onrender.com/event/${id}/details`, 'GET', undefined, true);
           if (response.success && response.data) {
-            setEvent(response.data);
+            console.log("Event details fetched successfully:", response.data);
+            setEvent(response.data.event);
           } else {
-            console.error("Failed to fetch event details:", response.message);
+            console.error("Failed to fetch event details:", response.message, response);
             navigate('/');
           }
         } catch (error) {
@@ -158,7 +159,7 @@ const BloomdayContainer: React.FC = () => {
         </div>
       ); // Or a loading spinner
     }
-    return <EventDetailsPage event={event} fromMyEventsPage={false} />;
+    return <EventDetailsPage event={event} />;
   };
 
   const isAuthPage = location.pathname === '/login' || location.pathname === '/register' || location.pathname.startsWith('/reset-password/') || location.pathname === '/forgot-password' || location.pathname === '/auth/verify-email';

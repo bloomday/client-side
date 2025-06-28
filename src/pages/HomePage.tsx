@@ -50,7 +50,7 @@ const HomePage: React.FC<HomePageProps> = ({ upcomingEvents }) => {
               const eventDate = new Date(event.date);
               const formattedDate = eventDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
               const formattedTime = eventDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-              const isMyEvent = userId && event.hosts.includes(userId);
+              const isMyEvent = userId && event.hosts && event.hosts.some(host => host._id === userId);
 
               return (
                 <div key={event._id} className="embla__slide flex-shrink-0">

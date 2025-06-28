@@ -5,12 +5,13 @@ export interface Event {
   date: string;
   location: string;
   type?: string;
-  hosts: string[];
+  hosts: { _id: string; name: string; email: string }[];
   slug: string;
   eventUrl: string;
   qrCode: string;
   allowCrowdfunding: boolean;
   invitees: string[];
+  visibility?: 'public' | 'private';
   ivImage: string | null;
   contributions: any[];
   __v: number;
@@ -23,4 +24,6 @@ export interface Event {
     url: string;
     uploadedAt: string;
   }[];
+  createdAt?: string;
+  updatedAt?: string;
 } 
