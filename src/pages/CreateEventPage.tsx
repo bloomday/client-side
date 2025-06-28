@@ -16,10 +16,11 @@ const CreateEventPage: React.FC<CreateEventPageProps> = ({ eventTypes }) => {
   const [type, setType] = useState('');
   const [description, setDescription] = useState('');
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
-  const [allowCrowdfunding, setAllowCrowdfunding] = useState(false);
+  const [allowCrowdfunding, setAllowCrowdfunding] = useState<'yes' | 'no'>('no');
   const [isLoading, setIsLoading] = useState(false);
   const [flashMessage, setFlashMessage] = useState<string | null>(null);
   const [flashMessageType, setFlashMessageType] = useState<'success' | 'error' | null>(null);
+  const [visibility, setVisibility] = useState<'public' | 'private'>('public');
 
   const handleCloseFlash = () => {
     setFlashMessage(null);
@@ -46,10 +47,19 @@ const CreateEventPage: React.FC<CreateEventPageProps> = ({ eventTypes }) => {
     formData.append('date', `${date}T${time}:00Z`);
     formData.append('location', location);
     formData.append('type', type);
-    formData.append('allowCrowdfunding', String(allowCrowdfunding));
+    formData.append('visibility', visibility);
+    formData.append('allowCrowdfunding', allowCrowdfunding === 'yes' ? 'true' : 'false');
     if (selectedImageFile) {
       formData.append('ivImage', selectedImageFile);
     }
+
+    // For debugging: console log the FormData contents
+    // const formDataObject: { [key: string]: any } = {};
+    // formData.forEach((value, key) => {
+    //   formDataObject[key] = value;
+    // });
+    // console.log('Sending data:', formDataObject);
+    // console.log('Token:', token);
 
     try {
       const response = await apiCall(
@@ -69,7 +79,8 @@ const CreateEventPage: React.FC<CreateEventPageProps> = ({ eventTypes }) => {
         setType('');
         setDescription('');
         setSelectedImageFile(null);
-        setAllowCrowdfunding(false);
+        setAllowCrowdfunding('no');
+        setVisibility('public');
 
         setTimeout(() => {
           navigate('/my-events');
@@ -156,6 +167,30 @@ const CreateEventPage: React.FC<CreateEventPageProps> = ({ eventTypes }) => {
               </select>
             </div>
             <div>
+              <label className={labelClasses}>Visibility</label>
+              <select
+                required
+                value={visibility}
+                onChange={(e) => setVisibility(e.target.value as 'public' | 'private')}
+                className={inputClasses}
+              >
+                <option value="public">public</option>
+                <option value="private">private</option>
+              </select>
+            </div>
+            <div>
+              <label className={labelClasses}>Allow Crowdfunding</label>
+              <select
+                required
+                value={allowCrowdfunding}
+                onChange={(e) => setAllowCrowdfunding(e.target.value as 'yes' | 'no')}
+                className={inputClasses}
+              >
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
+            </div>
+            <div>
               <label className={labelClasses}>Description</label>
               <textarea
                 required
@@ -173,18 +208,6 @@ const CreateEventPage: React.FC<CreateEventPageProps> = ({ eventTypes }) => {
                 onChange={(e) => setSelectedImageFile(e.target.files ? e.target.files[0] : null)}
                 className={`${inputClasses} file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100`}
               />
-            </div>
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="allowCrowdfunding"
-                checked={allowCrowdfunding}
-                onChange={(e) => setAllowCrowdfunding(e.target.checked)}
-                className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
-              />
-              <label htmlFor="allowCrowdfunding" className="ml-2 block text-sm text-[#9dadbe]">
-                Allow Crowdfunding
-              </label>
             </div>
             <button
               type="submit"

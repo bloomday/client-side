@@ -23,9 +23,15 @@ export async function apiCall<T>(
   body?: object,
   requiresAuth: boolean = true
 ): Promise<ApiResponse<T>> {
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
-  };
+  const headers: HeadersInit = {};
+  let requestBody: BodyInit | undefined;
+
+  if (!(body instanceof FormData)) {
+    headers['Content-Type'] = 'application/json';
+    requestBody = body ? JSON.stringify(body) : undefined;
+  } else {
+    requestBody = body;
+  }
 
   if (requiresAuth) {
     const token = localStorage.getItem('token');
@@ -42,7 +48,7 @@ export async function apiCall<T>(
     const response = await fetch(url, {
       method,
       headers,
-      body: body ? JSON.stringify(body) : undefined,
+      body: requestBody,
     });
 
     // Do not handle 401 globally for the sign-in endpoint; let the component handle it.
