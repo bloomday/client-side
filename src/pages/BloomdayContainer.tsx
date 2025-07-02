@@ -70,10 +70,18 @@ const BloomdayContainer: React.FC = () => {
       }
     };
 
+    const isAuthPage = location.pathname === '/login' || 
+                       location.pathname === '/register' || 
+                       location.pathname.startsWith('/reset-password/') || 
+                       location.pathname === '/forgot-password' || 
+                       location.pathname === '/auth/verify-email' || 
+                       location.pathname.startsWith('/invite/');
+
     if (localStorage.getItem('token')) {
       fetchTrendingEvents();
       fetchMyEvents();
-    } else {
+    } else if (!isAuthPage) {
+      console.log("No token found, redirecting to login.");
       navigate('/login', { replace: true });
     }
   }, [location.pathname, navigate]);
@@ -164,7 +172,12 @@ const BloomdayContainer: React.FC = () => {
     return <EventDetailsPage event={event} />;
   };
 
-  const isAuthPage = location.pathname === '/login' || location.pathname === '/register' || location.pathname.startsWith('/reset-password/') || location.pathname === '/forgot-password' || location.pathname === '/auth/verify-email';
+  const isAuthPage = location.pathname === '/login' || 
+                       location.pathname === '/register' || 
+                       location.pathname.startsWith('/reset-password/') || 
+                       location.pathname === '/forgot-password' || 
+                       location.pathname === '/auth/verify-email' || 
+                       location.pathname.startsWith('/invite/');
 
   return (
     <div className={'bg-[#14191f]'}>
