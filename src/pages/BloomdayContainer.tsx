@@ -39,7 +39,7 @@ const BloomdayContainer: React.FC = () => {
   useEffect(() => {
     const fetchTrendingEvents = async () => {
       try {
-        const response = await apiCall<{ trending: Event[] }>('https://bloomday-server-side.onrender.com/events/trending', 'GET', undefined, true);
+        const response = await apiCall<{ trending: Event[] }>('/events/trending', 'GET', undefined, true);
         if (response.success && response.data) {
           setTrendingEvents(response.data);
           console.log("All Trending Events Dates:", response.data.trending.map(event => event.date));
@@ -56,7 +56,7 @@ const BloomdayContainer: React.FC = () => {
 
     const fetchMyEvents = async () => {
       try {
-        const response = await apiCall<{ events: Event[] }>('https://bloomday-server-side.onrender.com/my-events', 'GET', undefined, true);
+        const response = await apiCall<{ events: Event[] }>('/my-events', 'GET', undefined, true);
         if (response.success && response.data) {
           console.log("My Events API response data:", response.data);
           setMyEvents(response.data.events);

@@ -47,7 +47,11 @@ export async function apiCall<T>(
   }
 
   try {
-    const response = await fetch(API_BASE_URL + url, {
+    const fullUrl = url.startsWith('http://') || url.startsWith('https://') 
+      ? url 
+      : API_BASE_URL + url;
+
+    const response = await fetch(fullUrl, {
       method,
       headers,
       body: requestBody,
