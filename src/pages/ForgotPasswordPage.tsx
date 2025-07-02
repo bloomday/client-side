@@ -27,7 +27,7 @@ const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = () => {
 
     try {
       const response = await apiCall(
-        'https://bloomday-server-side.onrender.com/forgot-password',
+        '/forgot-password',
         'POST',
         { email },
         false // Does not require an existing token

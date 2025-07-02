@@ -34,7 +34,7 @@ const VerifyEmailPage: React.FC<VerifyEmailPageProps> = () => {
 
       try {
         const response = await apiCall(
-          `https://bloomday-server-side.onrender.com/verify-email?token=${urlToken}`,
+          `/verify-email?token=${urlToken}`,
           'GET',
           undefined,
           false // Email verification does not require an existing token

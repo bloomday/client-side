@@ -40,7 +40,7 @@ const RegisterPage: React.FC<RegisterPageProps> = () => {
 
     try {
       const response = await apiCall(
-        'https://bloomday-server-side.onrender.com/signup',
+        '/signup',
         'POST',
         { name, email, password },
         false // Registration does not require an existing token

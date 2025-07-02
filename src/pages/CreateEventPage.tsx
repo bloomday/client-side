@@ -63,7 +63,7 @@ const CreateEventPage: React.FC<CreateEventPageProps> = ({ eventTypes }) => {
 
     try {
       const response = await apiCall(
-        'https://bloomday-server-side.onrender.com/create-event',
+        '/create-event',
         'POST',
         formData,
         true

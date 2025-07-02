@@ -30,7 +30,7 @@ const LoginPage: React.FC<LoginPageProps> = () => {
 
     try {
       const response = await apiCall(
-        'https://bloomday-server-side.onrender.com/signin',
+        '/signin',
         'POST',
         { email, password },
         false // Login does not require an existing token

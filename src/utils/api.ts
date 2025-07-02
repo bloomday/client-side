@@ -16,6 +16,8 @@ export const handleUnauthorized = () => {
   window.location.href = '/login'; 
 };
 
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://bloomday-server-side.onrender.com';
+
 // Generic API call utility
 export async function apiCall<T>(
   url: string,
@@ -45,7 +47,7 @@ export async function apiCall<T>(
   }
 
   try {
-    const response = await fetch(url, {
+    const response = await fetch(API_BASE_URL + url, {
       method,
       headers,
       body: requestBody,

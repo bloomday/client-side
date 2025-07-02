@@ -27,7 +27,7 @@ const AccountPage: React.FC<AccountPageProps> = () => {
 
     try {
       const response = await apiCall(
-        'https://bloomday-server-side.onrender.com/logout',
+        '/logout',
         'POST',
         {
           email: user.email,

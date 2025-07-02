@@ -46,7 +46,7 @@ const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ /* setCurrentPage
 
     try {
       const response = await apiCall(
-        'https://bloomday-server-side.onrender.com/reset-password',
+        '/reset-password',
         'POST',
         { token, newPassword },
         false // Does not require an existing token
