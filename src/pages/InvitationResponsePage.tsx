@@ -28,8 +28,9 @@ const InvitationResponsePage: React.FC = () => {
       setFlashMessageType(null);
 
       try {
-        const url = `https://bloomday-server-side.onrender.com/invite/${action}/${id}`;
-        const response = await apiCall(url, 'POST', undefined, false); // No body, no auth required
+        const url = `/invite/${action}/${id}`;
+        console.log("API call URL for invitation:", url);
+        const response = await apiCall(url, 'GET', undefined, false); // Changed to GET request
 
         if (response.success) {
           setFlashMessage(response.message || `Invitation ${action}ed successfully!`);

@@ -25,6 +25,7 @@ export async function apiCall<T>(
   body?: object,
   requiresAuth: boolean = true
 ): Promise<ApiResponse<T>> {
+  console.log("apiCall received URL:", url);
   const headers: HeadersInit = {};
   let requestBody: BodyInit | undefined;
 
@@ -38,6 +39,7 @@ export async function apiCall<T>(
   if (requiresAuth) {
     const token = localStorage.getItem('token');
     if (token) {
+      // console.log("API Request Token:", token);
       headers['Authorization'] = `Bearer ${token}`;
     } else {
       // If token is missing but auth is required, consider it unauthorized
@@ -50,6 +52,7 @@ export async function apiCall<T>(
     const fullUrl = url.startsWith('http://') || url.startsWith('https://') 
       ? url 
       : API_BASE_URL + url;
+    // console.log("API Call fullUrl:", fullUrl);
 
     const response = await fetch(fullUrl, {
       method,
