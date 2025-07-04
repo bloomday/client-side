@@ -62,7 +62,7 @@ const LoginPage: React.FC<LoginPageProps> = () => {
 
   const inputClasses = `w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-[#1f262e] border-[#3d4c5c] text-white`;
   const buttonClasses = `w-full py-3 px-6 rounded-lg font-semibold transition-all transform hover:scale-105 mt-4 bg-gradient-to-r from-purple-600 to-teal-600 text-white hover:from-purple-700 hover:to-teal-700`;
-  const socialButtonClasses = `flex items-center justify-center w-full py-3 px-6 rounded-lg font-semibold transition-all transform hover:scale-105 border border-[#3d4c5c] bg-[#dce7f3] text-[#14191f] hover:bg-[#b5c9e3]`;
+  // const socialButtonClasses = `flex items-center justify-center w-full py-3 px-6 rounded-lg font-semibold transition-all transform hover:scale-105 border border-[#3d4c5c] bg-[#dce7f3] text-[#14191f] hover:bg-[#b5c9e3]`;
 
   return (
     <div className="min-h-screen bg-[#14191f] py-8 px-4 flex flex-col items-center justify-center">
@@ -119,14 +119,14 @@ const LoginPage: React.FC<LoginPageProps> = () => {
         <div className="mt-8 text-center">
           <p className={`text-sm text-[#9dadbe]`}>Or log in with:</p>
           <div className="mt-4 space-y-3">
-            <button className={socialButtonClasses} disabled={isLoading}>
+            {/* <button className={socialButtonClasses} disabled={isLoading}>
               <img src="/icons/google.svg" alt="Google" className="w-5 h-5 mr-3" />
               Sign in with Google
-            </button>
-            <button className={socialButtonClasses} disabled={isLoading}>
+            </button> */}
+            {/* <button className={socialButtonClasses} disabled={isLoading}>
               <img src="/icons/facebook.svg" alt="Facebook" className="w-5 h-5 mr-3" />
               Sign in with Facebook
-            </button>
+            </button> */}
           </div>
         </div>
 

@@ -67,7 +67,7 @@ const RegisterPage: React.FC<RegisterPageProps> = () => {
 
   const inputClasses = `w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-[#1f262e] border-[#3d4c5c] text-white`;
   const buttonClasses = `w-full py-3 px-6 rounded-lg font-semibold transition-all transform hover:scale-105 mt-4 bg-gradient-to-r from-purple-600 to-teal-600 text-white hover:from-purple-700 hover:to-teal-700`;
-  const socialButtonClasses = `flex items-center justify-center w-full py-3 px-6 rounded-lg font-semibold transition-all transform hover:scale-105 border border-[#3d4c5c] bg-[#dce7f3] text-[#14191f] hover:bg-[#b5c9e3]`;
+  // const socialButtonClasses = `flex items-center justify-center w-full py-3 px-6 rounded-lg font-semibold transition-all transform hover:scale-105 border border-[#3d4c5c] bg-[#dce7f3] text-[#14191f] hover:bg-[#b5c9e3]`;
 
   return (
     <div className="min-h-screen bg-[#14191f] py-8 px-4 flex flex-col items-center justify-center">
@@ -155,14 +155,22 @@ const RegisterPage: React.FC<RegisterPageProps> = () => {
         <div className="mt-8 text-center">
           <p className={`text-sm text-[#9dadbe]`}>Or register with:</p>
           <div className="mt-4 space-y-3">
-            <button className={socialButtonClasses} disabled={isLoading}>
+            {/* <button
+              type="button"
+              onClick={handleGoogleSignUp}
+              className="w-full flex justify-center items-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+            >
               <img src="/icons/google.svg" alt="Google" className="w-5 h-5 mr-3" />
               Sign up with Google
-            </button>
-            <button className={socialButtonClasses} disabled={isLoading}>
+            </button> */}
+            {/* <button
+              type="button"
+              onClick={handleFacebookSignUp}
+              className="w-full flex justify-center items-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 mt-3"
+            >
               <img src="/icons/facebook.svg" alt="Facebook" className="w-5 h-5 mr-3" />
               Sign up with Facebook
-            </button>
+            </button> */}
           </div>
         </div>
 
