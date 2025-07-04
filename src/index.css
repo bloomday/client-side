@@ -2,14 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
+html,
 body {
   margin: 0;
+  height: 100%; /* Ensure html and body take full viewport height */
+  overflow-y: auto; /* Allow vertical scrolling only when content exceeds viewport height */
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: #14191f; 
+}
+
+#root {
+  height: 100%; /* Ensure the root React div also takes full viewport height */
 }
 
 code {
