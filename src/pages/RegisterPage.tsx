@@ -65,7 +65,7 @@ const RegisterPage: React.FC = () => {
       <div className="flex flex-col items-center">
         <img src="/bloomday-icon.svg" alt="Bloomday Logo" className="h-12 w-12" />
         <h2 className="text-white text-lg font-bold leading-tight tracking-[-0.015em]">Bloomday</h2>
-        <div className="max-w-md w-full rounded-lg shadow-md p-4 bg-[#1f262e] max-h-[90vh] overflow-y-auto mt-4">
+        <div className="max-w-xl w-full rounded-lg shadow-md p-4 bg-[#1f262e] max-h-[90vh] overflow-y-auto mt-4">
           <div className="space-y-4 p-6">
             <h1 className="text-3xl font-bold text-center text-white">Register</h1>
             <form onSubmit={handleSubmit} className="space-y-4">
