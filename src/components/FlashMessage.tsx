@@ -11,7 +11,7 @@ const FlashMessage: React.FC<FlashMessageProps> = ({ message, type, onClose }) =
     if (message) {
       const timer = setTimeout(() => {
         onClose();
-      }, 5000); // Message disappears after 5 seconds
+      }, 6000); // Message disappears after 6 seconds
       return () => clearTimeout(timer);
     }
   }, [message, onClose]);

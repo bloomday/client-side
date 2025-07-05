@@ -47,7 +47,7 @@ const InvitationResponsePage: React.FC = () => {
         setIsLoading(false);
         setTimeout(() => {
           navigate('/register');
-        }, 3000); // Redirect after 3 seconds
+        }, 5000); // Redirect after 5 seconds
       }
     };
 
