@@ -77,27 +77,68 @@ const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event /*, fromMyEve
       return;
     }
 
+    // Email validation regex (basic, but covers common formats)
+    const emailRegex = /^[\w!#$%&'*+/=?`{|}~^-]+(?:\.[\w!#$%&'*+/=?`{|}~^-]+)*@(?:[A-Z0-9-]+\.)+[A-Z]{2,6}$/i;
+
+    for (const email of emailsArray) {
+      if (!emailRegex.test(email)) {
+        setFlashMessage(`Invalid email address: ${email}. Please enter valid email(s).`);
+        setFlashMessageType('error');
+        return;
+      }
+    }
+
     setIsLoading(true);
     setFlashMessage(null);
     setFlashMessageType(null);
 
     try {
-      // const token = localStorage.getItem('token'); // apiCall handles token implicitly
-      // if (!token) {
-      //   setFlashMessage('Authentication token not found. Please log in.');
-      //   setFlashMessageType('error');
-      //   setIsLoading(false);
-      //   return;
-      // }
+      let overallSuccess = true;
+      let firstErrorMessage: string | null = null;
 
-      const response = await apiCall<{ message: string }>('/send-invite', 'POST', { eventId: event._id, inviteEmails: emailsArray }, true);
+      if (emailsArray.length === 1) {
+        // Single email, send one request
+        const response = await apiCall<{ message: string }>(
+          '/send-invite',
+          'POST',
+          { eventId: event._id, inviteEmails: emailsArray },
+          true
+        );
+        if (!response.success) {
+          overallSuccess = false;
+          firstErrorMessage = response.message || 'Failed to send invite.';
+        }
+      } else {
+        // Multiple emails, send individual requests
+        const invitePromises = emailsArray.map(email =>
+          apiCall<{ message: string }>(
+            '/send-invite',
+            'POST',
+            { eventId: event._id, inviteEmails: [email] }, // Send each email as a single-element array
+            true
+          )
+        );
 
-      if (response.success) {
-        setFlashMessage(response.message || 'Invites sent successfully.');
+        const results = await Promise.all(invitePromises);
+
+        for (const result of results) {
+          if (!result.success) {
+            overallSuccess = false;
+            if (!firstErrorMessage) {
+              firstErrorMessage = result.message || 'Failed to send some invites.';
+            }
+            console.error('Individual invite failed:', result.message);
+          }
+        }
+      }
+
+      if (overallSuccess) {
+        setFlashMessage('Invites sent successfully.');
         setFlashMessageType('success');
         setInviteEmails(''); // Clear input after success
       } else {
-        throw new Error(response.message || 'Failed to send invites.');
+        setFlashMessage(firstErrorMessage || 'Failed to send some invites.');
+        setFlashMessageType('error');
       }
     } catch (error: any) {
       console.error('Send invites error:', error);
@@ -209,7 +250,7 @@ const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event /*, fromMyEve
                 <textarea
                   className="w-full p-3 border rounded-lg resize-y bg-gray-100 text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
                   rows={4}
-                  placeholder="Enter invitee emails, separated by commas (e.g., email1@example.com, email2@example.com)"
+                  placeholder="Enter invitee email(s), separated by commas (e.g., email1@example.com, email2@example.com)"
                   value={inviteEmails}
                   onChange={(e) => setInviteEmails(e.target.value)}
                 ></textarea>
