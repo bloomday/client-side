@@ -143,7 +143,7 @@ const BloomdayContainer: React.FC = () => {
           return;
         }
         try {
-          const response = await apiCall<{ event: Event, totalAmount: number }>(`https://bloomday-server-side.onrender.com/event/${id}/details`, 'GET', undefined, true);
+          const response = await apiCall<{ event: Event, totalAmount: number }>(`/event/${id}/details`, 'GET', undefined, true);
           if (response.success && response.data) {
             console.log("Event details fetched successfully:", response.data);
             setEvent(response.data.event);

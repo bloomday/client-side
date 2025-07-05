@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, MapPin, User } from 'lucide-react';
 import { Event } from '../types';
 import FlashMessage from '../components/FlashMessage';
+import { apiCall } from '../utils/api';
 
 interface EventDetailsPageProps {
   event: Event | undefined;
@@ -38,21 +39,13 @@ const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event /*, fromMyEve
         const token = localStorage.getItem('token');
         if (!token) return;
 
-        const response = await fetch(`http://localhost:3000/events/${event._id}/gallery`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-        });
+        const response = await apiCall<{ url: string, uploadedBy: string, uploadedAt: string }[]>(`/events/${event._id}/gallery`, 'GET', undefined, true);
 
-        if (response.ok) {
-          const data = await response.json();
-          setEventGalleryImages(data);
+        if (response.success && response.data) {
+          setEventGalleryImages(response.data);
         } else {
-          const errorData = await response.json();
-          console.error('Failed to fetch event gallery:', errorData);
-          setFlashMessage(errorData.message || 'Failed to load event gallery.');
+          console.error('Failed to fetch event gallery:', response.message);
+          setFlashMessage(response.message || 'Failed to load event gallery.');
           setFlashMessageType('error');
         }
       } catch (error) {
@@ -89,31 +82,22 @@ const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event /*, fromMyEve
     setFlashMessageType(null);
 
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setFlashMessage('Authentication token not found. Please log in.');
-        setFlashMessageType('error');
-        setIsLoading(false);
-        return;
-      }
+      // const token = localStorage.getItem('token'); // apiCall handles token implicitly
+      // if (!token) {
+      //   setFlashMessage('Authentication token not found. Please log in.');
+      //   setFlashMessageType('error');
+      //   setIsLoading(false);
+      //   return;
+      // }
 
-      const response = await fetch('https://bloomday-server-side.onrender.com/send-invite', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ eventId: event._id, inviteEmails: emailsArray }),
-      });
+      const response = await apiCall<{ message: string }>('/send-invite', 'POST', { eventId: event._id, inviteEmails: emailsArray }, true);
 
-      const data = await response.json();
-
-      if (response.ok) {
-        setFlashMessage(data.message || 'Invites sent successfully.');
+      if (response.success) {
+        setFlashMessage(response.message || 'Invites sent successfully.');
         setFlashMessageType('success');
         setInviteEmails(''); // Clear input after success
       } else {
-        throw new Error(data.message || 'Failed to send invites.');
+        throw new Error(response.message || 'Failed to send invites.');
       }
     } catch (error: any) {
       console.error('Send invites error:', error);
@@ -143,13 +127,13 @@ const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event /*, fromMyEve
     }
 
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setFlashMessage('Authentication token not found. Please log in.');
-        setFlashMessageType('error');
-        setIsLoading(false);
-        return;
-      }
+      // const token = localStorage.getItem('token'); // apiCall handles token implicitly
+      // if (!token) {
+      //   setFlashMessage('Authentication token not found. Please log in.');
+      //   setFlashMessageType('error');
+      //   setIsLoading(false);
+      //   return;
+      // }
 
       const formData = new FormData();
       selectedFiles.forEach((file) => {
@@ -157,22 +141,14 @@ const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event /*, fromMyEve
       });
       formData.append('uploadedBy', userName || 'Anonymous');
 
-      const response = await fetch(`http://localhost:3000/events/${event._id}/upload-multiple`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-        body: formData,
-      });
+      const response = await apiCall<{ message: string }>(`/events/${event._id}/upload-multiple`, 'POST', formData, true);
 
-      const data = await response.json();
-
-      if (response.ok) {
-        setFlashMessage(data.message || 'Images uploaded successfully.');
+      if (response.success) {
+        setFlashMessage(response.message || 'Images uploaded successfully.');
         setFlashMessageType('success');
         setSelectedFiles([]); // Clear selected files after success
       } else {
-        throw new Error(data.message || 'Failed to upload images.');
+        throw new Error(response.message || 'Failed to upload images.');
       }
     } catch (error: any) {
       console.error('Upload images error:', error);
