@@ -16,15 +16,17 @@ const HomePage: React.FC<HomePageProps> = ({ upcomingEvents }) => {
   return (
     <div className="min-h-screen bg-[#14191f] flex flex-col justify-between max-w-screen-lg mx-auto">
       {/* Header */}
-      <div className="fixed top-0 left-0 right-0 z-10 flex items-center bg-[#14191f] p-4 pb-2 justify-between">
-        <h2 className="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1">Bloomday</h2>
-        <div className="flex items-center justify-end">
-          <button
-            onClick={() => navigate('/create')}
-            className="px-4 py-2 rounded-lg font-bold transition-all transform hover:scale-105 bg-gradient-to-r from-purple-600 to-teal-600 text-white hover:from-purple-700 hover:to-teal-700 text-sm"
-          >
-            Create Event
-          </button>
+      <div className="fixed top-0 left-0 right-0 z-10 bg-[#14191f]">
+        <div className="max-w-screen-lg mx-auto flex items-center p-4 pb-4 justify-between">
+          <h2 className="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1">Bloomday</h2>
+          <div className="flex items-center justify-end">
+            <button
+              onClick={() => navigate('/create')}
+              className="px-4 py-2 rounded-lg font-bold transition-all transform hover:scale-105 bg-gradient-to-r from-purple-600 to-teal-600 text-white hover:from-purple-700 hover:to-teal-700 text-sm"
+            >
+              Create Event
+            </button>
+          </div>
         </div>
       </div>
 

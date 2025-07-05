@@ -40,7 +40,7 @@ const RegisterPage: React.FC = () => {
         false
       );
       if (response.success) {
-        setFlashMessage(response.message || 'Registration successful! Please check your email, including your spam folder.');
+        setFlashMessage(response.message || 'Registration successful! Please check your email, including your spam folder. Thank you!');
         setFlashMessageType('success');
         setTimeout(() => {
           navigate('/login', { replace: true });
