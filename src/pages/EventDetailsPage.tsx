@@ -348,9 +348,9 @@ const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event /*, fromMyEve
                     <button className="w-full bg-gradient-to-r from-purple-600 to-teal-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-purple-700 hover:to-teal-700 transition-all">
                       RSVP - Free
                     </button>
-                    <button className="w-full bg-coral-500 text-white py-3 px-6 rounded-lg font-semibold hover:bg-coral-600 transition-all">
+                    {/* <button className="w-full bg-coral-500 text-white py-3 px-6 rounded-lg font-semibold hover:bg-coral-600 transition-all">
                       Buy Tickets - $25
-                    </button>
+                    </button> */}
                   </>
                 )}
                 <span className="inline-block w-full text-center bg-gray-100 text-gray-700 py-2 px-4 rounded-lg">
