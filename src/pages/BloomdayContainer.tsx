@@ -48,8 +48,10 @@ const BloomdayContainer: React.FC = () => {
           console.error("Failed to fetch trending events:", response.message);
           setTrendingEvents({ trending: [] });
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error fetching trending events:", error);
+        // The apiCall utility now handles the generic message, but we might want to ensure consistency here too if a specific error isn't provided.
+        // setFlashMessage(error.message || "An error occurred, please try again later."); // Removed as BloomdayContainer doesn't have a direct flash message for these fetches
         setTrendingEvents({ trending: [] });
       }
     };
@@ -64,8 +66,9 @@ const BloomdayContainer: React.FC = () => {
           console.error("Failed to fetch user's events:", response.message);
           setMyEvents([]);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error fetching user's events:", error);
+        // setFlashMessage(error.message || "An error occurred, please try again later."); // Removed as BloomdayContainer doesn't have a direct flash message for these fetches
         setMyEvents([]);
       }
     };
@@ -151,7 +154,7 @@ const BloomdayContainer: React.FC = () => {
             console.error("Failed to fetch event details:", response.message, response);
             navigate('/');
           }
-        } catch (error) {
+        } catch (error: any) {
           console.error("Error fetching event details:", error);
           navigate('/');
         }

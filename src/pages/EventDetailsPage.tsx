@@ -45,12 +45,12 @@ const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event /*, fromMyEve
           setEventGalleryImages(response.data);
         } else {
           console.error('Failed to fetch event gallery:', response.message);
-          setFlashMessage(response.message || 'Failed to load event gallery.');
+          setFlashMessage(response.message || 'An error occurred, please try again later.');
           setFlashMessageType('error');
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error fetching event gallery:', error);
-        setFlashMessage('Network error. Could not load event gallery.');
+        setFlashMessage(error.message || 'An error occurred, please try again later.');
         setFlashMessageType('error');
       }
     };
@@ -137,12 +137,12 @@ const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event /*, fromMyEve
         setFlashMessageType('success');
         setInviteEmails(''); // Clear input after success
       } else {
-        setFlashMessage(firstErrorMessage || 'Failed to send some invites.');
+        setFlashMessage(firstErrorMessage || 'An error occurred, please try again later.');
         setFlashMessageType('error');
       }
     } catch (error: any) {
       console.error('Send invites error:', error);
-      setFlashMessage(error.message || 'Network error. Please try again later.');
+      setFlashMessage(error.message || 'An error occurred, please try again later.');
       setFlashMessageType('error');
     } finally {
       setIsLoading(false);
@@ -189,11 +189,11 @@ const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event /*, fromMyEve
         setFlashMessageType('success');
         setSelectedFiles([]); // Clear selected files after success
       } else {
-        throw new Error(response.message || 'Failed to upload images.');
+        throw new Error(response.message || 'An error occurred, please try again later.');
       }
     } catch (error: any) {
       console.error('Upload images error:', error);
-      setFlashMessage(error.message || 'Network error. Please try again later.');
+      setFlashMessage(error.message || 'An error occurred, please try again later.');
       setFlashMessageType('error');
     } finally {
       setIsLoading(false);

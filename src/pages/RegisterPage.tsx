@@ -40,7 +40,7 @@ const RegisterPage: React.FC = () => {
         false
       );
       if (response.success) {
-        setFlashMessage(response.message || 'Registration successful! Please check your email, including your spam folder. Thank you!');
+        setFlashMessage('Registration successful! Please check your email, including your spam folder, to verify your account. Thank you!');
         setFlashMessageType('success');
         setTimeout(() => {
           navigate('/login', { replace: true });
@@ -50,7 +50,7 @@ const RegisterPage: React.FC = () => {
         setFlashMessageType('error');
       }
     } catch (error: any) {
-      setFlashMessage(error.message || 'Network error. Please try again later.');
+      setFlashMessage('An error occurred, please try again later.');
       setFlashMessageType('error');
     } finally {
       setIsLoading(false);

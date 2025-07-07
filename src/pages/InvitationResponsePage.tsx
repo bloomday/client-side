@@ -41,7 +41,7 @@ const InvitationResponsePage: React.FC = () => {
         }
       } catch (error: any) {
         console.error(`Error ${action}ing invitation:`, error);
-        setFlashMessage(error.message || "Network error. Please try again later.");
+        setFlashMessage(error.message || 'An error occurred, please try again later.');
         setFlashMessageType('error');
       } finally {
         setIsLoading(false);

@@ -76,6 +76,6 @@ export async function apiCall<T>(
     }
   } catch (error) {
     console.error('API call error:', error);
-    return { success: false, message: (error as Error).message || 'Network error', statusCode: 500 };
+    return { success: false, message: 'An error occurred, please try again later.', statusCode: 500 };
   }
 } 
