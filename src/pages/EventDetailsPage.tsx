@@ -3,6 +3,7 @@ import { Calendar, Clock, MapPin, User } from 'lucide-react';
 import { Event } from '../types';
 import FlashMessage from '../components/FlashMessage';
 import { apiCall } from '../utils/api';
+import { Link } from 'react-router-dom'; // Added Link import
 
 interface EventDetailsPageProps {
   event: Event | undefined;
@@ -307,16 +308,45 @@ const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event /*, fromMyEve
             )}
 
             {/* Image Upload Section */}
-            {isCurrentUserAttendee && eventStarted && (
+            { isCurrentUserAttendee && eventStarted && (
               <div className="bg-white rounded-lg shadow-md p-6 mt-6">
                 <h2 className="text-2xl font-bold text-gray-800 mb-4">Upload Event Images</h2>
-                <input 
-                  type="file" 
-                  multiple 
-                  accept="image/*" 
-                  onChange={handleFileChange} 
-                  className="w-full p-3 border rounded-lg bg-gray-100 text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 mb-4"
-                />
+                <div
+                  className="flex items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 hover:border-blue-500 transition-colors duration-200 mb-4"
+                  onClick={() => document.getElementById('fileInput')?.click()}
+                >
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="hidden"
+                    id="fileInput"
+                  />
+                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                    <svg className="w-10 h-10 mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 0115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                    <p className="mb-2 text-sm text-gray-500"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                    <p className="text-xs text-gray-500">PNG, JPG or GIF (MAX. 2MB)</p>
+                  </div>
+                </div>
+                {selectedFiles.length > 0 && (
+                  <div className="mb-4">
+                    <p className="text-gray-700 text-sm mb-2">Selected Files:</p>
+                    <ul className="list-disc list-inside text-gray-600">
+                      {selectedFiles.map((file, index) => (
+                        <li key={index} className="text-sm flex justify-between items-center">
+                          {file.name}
+                          <button
+                            onClick={() => setSelectedFiles((prev) => prev.filter((_, i) => i !== index))}
+                            className="text-red-500 hover:text-red-700 ml-2"
+                          >
+                            Remove
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
                 <button
                   onClick={handleImageUpload}
                   className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white py-3 px-6 rounded-lg font-semibold hover:from-green-600 hover:to-blue-600 transition-all"
@@ -338,16 +368,13 @@ const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event /*, fromMyEve
             {eventGalleryImages && eventGalleryImages.length > 0 && (
               <div className="bg-white rounded-lg shadow-md p-6 mt-6">
                 <h2 className="text-2xl font-bold text-gray-800 mb-4">Event Gallery</h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {eventGalleryImages.map((img, index) => (
-                    <div key={index} className="relative group rounded-lg overflow-hidden">
-                      <img src={img.url} alt={`Event Gallery ${index + 1}`} className="w-full h-32 object-cover" />
-                      <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <p className="text-white text-xs text-center">Uploaded by {img.uploadedBy} on {new Date(img.uploadedAt).toLocaleDateString()}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <p className="text-gray-700 mb-4">This event has {eventGalleryImages.length} images in its gallery.</p>
+                <Link 
+                  to={`/events/${event._id}/gallery-full`} 
+                  className="w-full bg-gradient-to-r from-purple-600 to-teal-600 text-white py-3 px-6 rounded-lg font-semibold text-center block hover:from-purple-700 hover:to-teal-700 transition-all"
+                >
+                  View All Images
+                </Link>
               </div>
             )}
           </div>

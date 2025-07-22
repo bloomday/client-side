@@ -17,6 +17,7 @@ import { Event } from '../types/index';
 import { apiCall } from '../utils/api';
 import { useLocation, Routes, Route, useNavigate, useParams } from 'react-router-dom';
 import InvitationResponsePage from './InvitationResponsePage';
+import EventGalleryPage from './EventGalleryPage';
 
 interface DateRange {
   start: string;
@@ -37,6 +38,11 @@ const BloomdayContainer: React.FC = () => {
   });
 
   useEffect(() => {
+    console.log('BloomdayContainer: useEffect triggered.');
+    console.log('BloomdayContainer: Current path:', location.pathname);
+    const currentToken = localStorage.getItem('token');
+    console.log('BloomdayContainer: Token status:', currentToken ? 'Present' : 'Not Present');
+
     const fetchTrendingEvents = async () => {
       try {
         const response = await apiCall<{ trending: Event[] }>('/events/trending', 'GET', undefined, true);
@@ -119,6 +125,7 @@ const BloomdayContainer: React.FC = () => {
         <Route path="/auth/verify-email" element={<VerifyEmailPage />} />
         <Route path="/invite/:action/:id" element={<InvitationResponsePage />} />
         <Route path="/event/:id" element={<EventDetailsPageWrapper />} />
+        <Route path="/events/:eventId/gallery-full" element={<EventGalleryPage />} />
         <Route path="*" element={<LoginPage />} />
       </Routes>
     );
