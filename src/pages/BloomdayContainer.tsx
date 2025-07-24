@@ -18,6 +18,7 @@ import { apiCall } from '../utils/api';
 import { useLocation, Routes, Route, useNavigate, useParams } from 'react-router-dom';
 import InvitationResponsePage from './InvitationResponsePage';
 import EventGalleryPage from './EventGalleryPage';
+import PaymentSuccessPage from './PaymentSuccessPage'; // Import the new PaymentSuccessPage
 
 interface DateRange {
   start: string;
@@ -126,6 +127,7 @@ const BloomdayContainer: React.FC = () => {
         <Route path="/invite/:action/:id" element={<InvitationResponsePage />} />
         <Route path="/event/:id" element={<EventDetailsPageWrapper />} />
         <Route path="/events/:eventId/gallery-full" element={<EventGalleryPage />} />
+        <Route path="/payment-success" element={<PaymentSuccessPage />} /> {/* New route for payment success */}
         <Route path="*" element={<LoginPage />} />
       </Routes>
     );
@@ -208,8 +210,33 @@ const BloomdayContainer: React.FC = () => {
           .pb-20 { padding-bottom: 5rem; }
         }
       `}</style>
+
+      {/* SVG Definitions for Animated Gradient */}
+      <svg width="0" height="0" style={{ position: 'absolute' }}>
+        <defs>
+          <linearGradient id="animatedGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#ee7752">
+              <animate attributeName="stop-color" values="#ee7752;#e73c7e;#23a6d5;#23d5ab;#ee7752" dur="5s" repeatCount="indefinite" />
+            </stop>
+            <stop offset="50%" stopColor="#e73c7e">
+              <animate attributeName="stop-color" values="#e73c7e;#23a6d5;#23d5ab;#ee7752;#e73c7e" dur="5s" repeatCount="indefinite" />
+            </stop>
+            <stop offset="100%" stopColor="#23a6d5">
+              <animate attributeName="stop-color" values="#23a6d5;#23d5ab;#ee7752;#e73c7e;#23a6d5" dur="5s" repeatCount="indefinite" />
+            </stop>
+            <animateTransform 
+              attributeName="gradientTransform"
+              type="rotate"
+              from="0 50 50"
+              to="360 50 50"
+              dur="10s"
+              repeatCount="indefinite" />
+          </linearGradient>
+        </defs>
+      </svg>
+
       {!isAuthPage && location.pathname !== '/' && <BackButton />}
-      <div className="pb-20 md:pb-0">
+      <div className="min-h-screen pb-20 md:pb-0 flex flex-col">
         {renderPage()}
       </div>
       {!isAuthPage && <MobileNav />}

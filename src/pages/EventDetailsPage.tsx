@@ -18,6 +18,12 @@ const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event /*, fromMyEve
   const [isCurrentUserHost, setIsCurrentUserHost] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [eventGalleryImages, setEventGalleryImages] = useState<Event['gallery']>([]);
+  // Add state for the gift form
+  const [giftName, setGiftName] = useState('');
+  const [giftEmail, setGiftEmail] = useState('');
+  const [giftAmount, setGiftAmount] = useState('');
+  const [giftMessage, setGiftMessage] = useState('');
+  const [showGiftForm, setShowGiftForm] = useState(false);
 
   console.log('EventDetailsPage - event prop:', event);
 
@@ -377,6 +383,124 @@ const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event /*, fromMyEve
                 </Link>
               </div>
             )}
+            {/* Gift a Bloom / Crowdfund Section */}
+            <div className="bg-white rounded-lg shadow-md p-6 mt-6 relative">
+              <h2 className="text-2xl font-bold text-gray-800 mb-4">Gift a Bloom</h2>
+              {!showGiftForm ? (
+                <button
+                  onClick={() => setShowGiftForm(true)}
+                  className="w-full bg-gradient-to-r from-purple-600 to-teal-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-purple-700 hover:to-teal-700 transition-all flex items-center justify-center space-x-2"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="url(#animatedGradient)" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-gift"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13H7a2 2 0 0 1-2-2V8z"/><path d="M7 8h10v4"/><path d="M17 8v13h-5"/><path d="M22 12v-4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v4"/><path d="M12 22v-4"/><path d="M4 12h16"/></svg>
+                  <span>Gift a Bloom</span>
+                </button>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setShowGiftForm(false)}
+                    className="absolute top-4 right-4 w-8 h-8 rounded-full bg-purple-600 text-white flex items-center justify-center hover:bg-purple-700 transition-colors z-10"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+                  </button>
+                  <form
+                    onSubmit={async (e) => {
+                      e.preventDefault();
+                      setIsLoading(true);
+                      setFlashMessage(null);
+                      setFlashMessageType(null);
+                      try {
+                        const response = await apiCall<{ authorization_url: string }>(
+                          `/pay/${event._id}`,
+                          'POST',
+                          {
+                            amount: Number(giftAmount),
+                            message: giftMessage,
+                            name: giftName,
+                            email: giftEmail,
+                          },
+                          false
+                        );
+                        console.log('Gift a Bloom payment response:', response);
+                        if (response.success && response.data?.authorization_url) {
+                          window.open(response.data.authorization_url, '_blank');
+                        } else {
+                          setFlashMessage(response.message || 'Failed to initiate payment.');
+                          setFlashMessageType('error');
+                        }
+                      } catch (error: any) {
+                        setFlashMessage(error.message || 'An error occurred, please try again later.');
+                        setFlashMessageType('error');
+                      } finally {
+                        setIsLoading(false);
+                        setGiftName('');
+                        setGiftEmail('');
+                        setGiftAmount('');
+                        setGiftMessage('');
+                      }
+                    }}
+                    className="space-y-4 pt-8"
+                  >
+                    <div>
+                      <label className="block text-gray-700 text-sm font-medium mb-1">Your Name</label>
+                      <input
+                        type="text"
+                        className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500"
+                        value={giftName}
+                        onChange={e => setGiftName(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-gray-700 text-sm font-medium mb-1">Your Email</label>
+                      <input
+                        type="email"
+                        className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500"
+                        value={giftEmail}
+                        onChange={e => setGiftEmail(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-gray-700 text-sm font-medium mb-1">Amount</label>
+                      <input
+                        type="number"
+                        min="1"
+                        step="0.01"
+                        className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500"
+                        value={giftAmount}
+                        onChange={e => setGiftAmount(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-gray-700 text-sm font-medium mb-1">Message (optional)</label>
+                      <textarea
+                        className="w-full p-2 border border-gray-300 rounded-md resize-y focus:outline-none focus:ring-1 focus:ring-purple-500"
+                        value={giftMessage}
+                        onChange={e => setGiftMessage(e.target.value)}
+                        rows={2}
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      className="w-full bg-purple-600 text-white py-2.5 px-4 rounded-md font-semibold hover:bg-purple-700 transition-colors flex items-center justify-center space-x-2"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? (
+                        <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                      ) : (
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="url(#animatedGradient)" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-heart"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
+                      )}
+                      <span>{isLoading ? 'Processing...' : 'Gift the Bloom'}</span>
+                    </button>
+                  </form>
+                </>
+              )}
+            </div>
           </div>
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-md p-6 sticky top-8">
