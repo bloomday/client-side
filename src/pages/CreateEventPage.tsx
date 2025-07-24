@@ -91,7 +91,7 @@ const CreateEventPage: React.FC<CreateEventPageProps> = ({ eventTypes }) => {
       }
     } catch (error: any) {
       console.error('Create event error:', error);
-      setFlashMessage(error.message || "Network error. Please try again later.");
+      setFlashMessage(error.message || 'An error occurred, please try again later.');
       setFlashMessageType('error');
     } finally {
       setIsLoading(false);

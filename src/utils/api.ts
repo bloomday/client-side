@@ -8,7 +8,7 @@ export interface ApiResponse<T> {
 
 // Function to handle 401 unauthorized responses
 export const handleUnauthorized = () => {
-  console.log('401 Unauthorized: Clearing user data and redirecting to login.');
+  console.log('handleUnauthorized: Redirecting to login.');
   localStorage.removeItem('token');
   localStorage.removeItem('user');
   localStorage.removeItem('userId');
@@ -43,6 +43,7 @@ export async function apiCall<T>(
       headers['Authorization'] = `Bearer ${token}`;
     } else {
       // If token is missing but auth is required, consider it unauthorized
+      console.log('apiCall: Token missing, calling handleUnauthorized.');
       handleUnauthorized();
       return { success: false, message: 'Authentication required, but no token found.', statusCode: 401 };
     }
@@ -62,6 +63,7 @@ export async function apiCall<T>(
 
     // Do not handle 401 globally for the sign-in endpoint; let the component handle it.
     if (response.status === 401 && !url.includes('/signin')) {
+      console.log('apiCall: Received 401 status, calling handleUnauthorized.');
       handleUnauthorized();
       return { success: false, message: 'Session expired. Please log in again.', statusCode: 401 };
     }
@@ -76,6 +78,6 @@ export async function apiCall<T>(
     }
   } catch (error) {
     console.error('API call error:', error);
-    return { success: false, message: (error as Error).message || 'Network error', statusCode: 500 };
+    return { success: false, message: 'An error occurred, please try again later.', statusCode: 500 };
   }
 } 

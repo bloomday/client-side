@@ -11,7 +11,7 @@ const FlashMessage: React.FC<FlashMessageProps> = ({ message, type, onClose }) =
     if (message) {
       const timer = setTimeout(() => {
         onClose();
-      }, 5000); // Message disappears after 5 seconds
+      }, 6000); // Message disappears after 6 seconds
       return () => clearTimeout(timer);
     }
   }, [message, onClose]);
@@ -21,7 +21,7 @@ const FlashMessage: React.FC<FlashMessageProps> = ({ message, type, onClose }) =
   const bgColorClass = type === 'success' ? 'bg-green-500' : 'bg-red-500';
 
   return (
-    <div className={`fixed top-4 left-1/2 -translate-x-1/2 p-4 rounded-lg shadow-lg text-white font-semibold z-50 ${bgColorClass}`}>
+    <div className={`fixed top-4 left-1/2 -translate-x-1/2 p-4 rounded-lg shadow-lg max-w-md text-white text-sm font-normal z-50 ${bgColorClass}`}>
       {message}
       <button onClick={onClose} className="ml-4 text-white font-bold">
         &times;

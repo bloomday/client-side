@@ -17,6 +17,8 @@ import { Event } from '../types/index';
 import { apiCall } from '../utils/api';
 import { useLocation, Routes, Route, useNavigate, useParams } from 'react-router-dom';
 import InvitationResponsePage from './InvitationResponsePage';
+import EventGalleryPage from './EventGalleryPage';
+import PaymentSuccessPage from './PaymentSuccessPage'; // Import the new PaymentSuccessPage
 
 interface DateRange {
   start: string;
@@ -37,6 +39,11 @@ const BloomdayContainer: React.FC = () => {
   });
 
   useEffect(() => {
+    console.log('BloomdayContainer: useEffect triggered.');
+    console.log('BloomdayContainer: Current path:', location.pathname);
+    const currentToken = localStorage.getItem('token');
+    console.log('BloomdayContainer: Token status:', currentToken ? 'Present' : 'Not Present');
+
     const fetchTrendingEvents = async () => {
       try {
         const response = await apiCall<{ trending: Event[] }>('/events/trending', 'GET', undefined, true);
@@ -48,8 +55,10 @@ const BloomdayContainer: React.FC = () => {
           console.error("Failed to fetch trending events:", response.message);
           setTrendingEvents({ trending: [] });
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error fetching trending events:", error);
+        // The apiCall utility now handles the generic message, but we might want to ensure consistency here too if a specific error isn't provided.
+        // setFlashMessage(error.message || "An error occurred, please try again later."); // Removed as BloomdayContainer doesn't have a direct flash message for these fetches
         setTrendingEvents({ trending: [] });
       }
     };
@@ -64,8 +73,9 @@ const BloomdayContainer: React.FC = () => {
           console.error("Failed to fetch user's events:", response.message);
           setMyEvents([]);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error fetching user's events:", error);
+        // setFlashMessage(error.message || "An error occurred, please try again later."); // Removed as BloomdayContainer doesn't have a direct flash message for these fetches
         setMyEvents([]);
       }
     };
@@ -116,6 +126,8 @@ const BloomdayContainer: React.FC = () => {
         <Route path="/auth/verify-email" element={<VerifyEmailPage />} />
         <Route path="/invite/:action/:id" element={<InvitationResponsePage />} />
         <Route path="/event/:id" element={<EventDetailsPageWrapper />} />
+        <Route path="/events/:eventId/gallery-full" element={<EventGalleryPage />} />
+        <Route path="/payment-success" element={<PaymentSuccessPage />} /> {/* New route for payment success */}
         <Route path="*" element={<LoginPage />} />
       </Routes>
     );
@@ -143,7 +155,7 @@ const BloomdayContainer: React.FC = () => {
           return;
         }
         try {
-          const response = await apiCall<{ event: Event, totalAmount: number }>(`https://bloomday-server-side.onrender.com/event/${id}/details`, 'GET', undefined, true);
+          const response = await apiCall<{ event: Event, totalAmount: number }>(`/event/${id}/details`, 'GET', undefined, true);
           if (response.success && response.data) {
             console.log("Event details fetched successfully:", response.data);
             setEvent(response.data.event);
@@ -151,7 +163,7 @@ const BloomdayContainer: React.FC = () => {
             console.error("Failed to fetch event details:", response.message, response);
             navigate('/');
           }
-        } catch (error) {
+        } catch (error: any) {
           console.error("Error fetching event details:", error);
           navigate('/');
         }
@@ -198,8 +210,33 @@ const BloomdayContainer: React.FC = () => {
           .pb-20 { padding-bottom: 5rem; }
         }
       `}</style>
+
+      {/* SVG Definitions for Animated Gradient */}
+      <svg width="0" height="0" style={{ position: 'absolute' }}>
+        <defs>
+          <linearGradient id="animatedGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#ee7752">
+              <animate attributeName="stop-color" values="#ee7752;#e73c7e;#23a6d5;#23d5ab;#ee7752" dur="5s" repeatCount="indefinite" />
+            </stop>
+            <stop offset="50%" stopColor="#e73c7e">
+              <animate attributeName="stop-color" values="#e73c7e;#23a6d5;#23d5ab;#ee7752;#e73c7e" dur="5s" repeatCount="indefinite" />
+            </stop>
+            <stop offset="100%" stopColor="#23a6d5">
+              <animate attributeName="stop-color" values="#23a6d5;#23d5ab;#ee7752;#e73c7e;#23a6d5" dur="5s" repeatCount="indefinite" />
+            </stop>
+            <animateTransform 
+              attributeName="gradientTransform"
+              type="rotate"
+              from="0 50 50"
+              to="360 50 50"
+              dur="10s"
+              repeatCount="indefinite" />
+          </linearGradient>
+        </defs>
+      </svg>
+
       {!isAuthPage && location.pathname !== '/' && <BackButton />}
-      <div className="pb-20 md:pb-0">
+      <div className="min-h-screen pb-20 md:pb-0 flex flex-col">
         {renderPage()}
       </div>
       {!isAuthPage && <MobileNav />}
