@@ -25,7 +25,7 @@ export async function apiCall<T>(
   body?: object,
   requiresAuth: boolean = true
 ): Promise<ApiResponse<T>> {
-  console.log("apiCall received URL:", url);
+
   const headers: HeadersInit = {};
   let requestBody: BodyInit | undefined;
 
