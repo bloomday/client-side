@@ -44,7 +44,7 @@ const HomePage: React.FC<HomePageProps> = ({ upcomingEvents }) => {
       </div>
 
       {/* Trending Events Carousel Section */}
-      <h2 className="text-white text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Trending Events</h2>
+      <h2 className="text-white text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Hosted Events</h2>
       <div className="embla overflow-hidden px-4" ref={emblaRef}>
         <div className="embla__container flex w-full cursor-grab">
           {upcomingEvents.length > 0 ? (
@@ -78,7 +78,7 @@ const HomePage: React.FC<HomePageProps> = ({ upcomingEvents }) => {
             })
           ) : (
             <div className="text-center py-12 w-full">
-              <p className="text-[#9dadbe] text-lg">No upcoming events yet.</p>
+              <p className="text-[#9dadbe] text-lg">No hosted events available yet.</p>
               <button 
                 onClick={() => navigate('/create')}
                 className="mt-4 bg-[#dce7f3] text-[#14191f] px-6 py-3 rounded-lg font-bold hover:bg-[#b5c9e3] transition-colors"

@@ -23,7 +23,7 @@ export async function apiCall<T>(
   url: string,
   method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET',
   body?: object,
-  requiresAuth: boolean = true
+  requiresAuth: boolean = false
 ): Promise<ApiResponse<T>> {
 
   const headers: HeadersInit = {};
@@ -62,8 +62,7 @@ export async function apiCall<T>(
     });
 
     // Do not handle 401 globally for the sign-in endpoint; let the component handle it.
-    if (response.status === 401 && !url.includes('/signin')) {
-      console.log('apiCall: Received 401 status, calling handleUnauthorized.');
+if (requiresAuth && response.status === 401 && !url.includes('/signin')) {      console.log('apiCall: Received 401 status, calling handleUnauthorized.');
       handleUnauthorized();
       return { success: false, message: 'Session expired. Please log in again.', statusCode: 401 };
     }
