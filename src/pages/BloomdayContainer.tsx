@@ -46,19 +46,21 @@ const BloomdayContainer: React.FC = () => {
 
     const fetchTrendingEvents = async () => {
       try {
-        const response = await apiCall<{ trending: Event[] }>('/events/trending', 'GET', undefined, true);
+        const response = await apiCall<{ events: Event[] }>(
+          '/events/hosted-events',
+          'GET',
+          undefined,
+          false
+        );
+
         if (response.success && response.data) {
-          setTrendingEvents(response.data);
-          console.log("All Trending Events Dates:", response.data.trending.map(event => event.date));
-          console.log("Current Date for comparison:", new Date());
+          setTrendingEvents({ trending: response.data.events });
         } else {
-          console.error("Failed to fetch trending events:", response.message);
+          console.error("Failed to fetch hosted events:", response.message);
           setTrendingEvents({ trending: [] });
         }
       } catch (error: any) {
-        console.error("Error fetching trending events:", error);
-        // The apiCall utility now handles the generic message, but we might want to ensure consistency here too if a specific error isn't provided.
-        // setFlashMessage(error.message || "An error occurred, please try again later."); // Removed as BloomdayContainer doesn't have a direct flash message for these fetches
+        console.error("Error fetching hosted events:", error);
         setTrendingEvents({ trending: [] });
       }
     };
@@ -80,19 +82,13 @@ const BloomdayContainer: React.FC = () => {
       }
     };
 
-    const isAuthPage = location.pathname === '/login' || 
-                       location.pathname === '/register' || 
-                       location.pathname.startsWith('/reset-password/') || 
-                       location.pathname === '/forgot-password' || 
-                       location.pathname === '/auth/verify-email' || 
-                       location.pathname.startsWith('/invite/');
+
+    // Public homepage should always fetch hosted/trending events.
+    // This helps visitors see platform activity before login.
+    fetchTrendingEvents();
 
     if (localStorage.getItem('token')) {
-      fetchTrendingEvents();
       fetchMyEvents();
-    } else if (!isAuthPage) {
-      console.log("No token found, redirecting to login.");
-      navigate('/login', { replace: true });
     }
   }, [location.pathname, navigate]);
 
@@ -184,12 +180,12 @@ const BloomdayContainer: React.FC = () => {
     return <EventDetailsPage event={event} />;
   };
 
-  const isAuthPage = location.pathname === '/login' || 
-                       location.pathname === '/register' || 
-                       location.pathname.startsWith('/reset-password/') || 
-                       location.pathname === '/forgot-password' || 
-                       location.pathname === '/auth/verify-email' || 
-                       location.pathname.startsWith('/invite/');
+  const isAuthPage = location.pathname === '/login' ||
+    location.pathname === '/register' ||
+    location.pathname.startsWith('/reset-password/') ||
+    location.pathname === '/forgot-password' ||
+    location.pathname === '/auth/verify-email' ||
+    location.pathname.startsWith('/invite/');
 
   return (
     <div className={'bg-[#14191f]'}>
@@ -224,7 +220,7 @@ const BloomdayContainer: React.FC = () => {
             <stop offset="100%" stopColor="#23a6d5">
               <animate attributeName="stop-color" values="#23a6d5;#23d5ab;#ee7752;#e73c7e;#23a6d5" dur="5s" repeatCount="indefinite" />
             </stop>
-            <animateTransform 
+            <animateTransform
               attributeName="gradientTransform"
               type="rotate"
               from="0 50 50"

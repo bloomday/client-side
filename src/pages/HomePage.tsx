@@ -44,7 +44,7 @@ const HomePage: React.FC<HomePageProps> = ({ upcomingEvents }) => {
       </div>
 
       {/* Trending Events Carousel Section */}
-      <h2 className="text-white text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Trending Events</h2>
+      <h2 className="text-white text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Hosted Events</h2>
       <div className="embla overflow-hidden px-4" ref={emblaRef}>
         <div className="embla__container flex w-full cursor-grab">
           {upcomingEvents.length > 0 ? (
@@ -78,13 +78,31 @@ const HomePage: React.FC<HomePageProps> = ({ upcomingEvents }) => {
             })
           ) : (
             <div className="text-center py-12 w-full">
-              <p className="text-[#9dadbe] text-lg">No upcoming events yet.</p>
-              <button 
-                onClick={() => navigate('/create')}
-                className="mt-4 bg-[#dce7f3] text-[#14191f] px-6 py-3 rounded-lg font-bold hover:bg-[#b5c9e3] transition-colors"
-              >
-                Create New Event
-              </button>
+              <p className="text-[#9dadbe] text-lg">No hosted events available yet.</p>
+           {localStorage.getItem('token') ? (
+  <button
+    onClick={() => navigate('/create')}
+    className="px-4 py-2 rounded-lg font-bold transition-all transform hover:scale-105 bg-gradient-to-r from-purple-600 to-teal-600 text-white hover:from-purple-700 hover:to-teal-700 text-sm"
+  >
+    Create Event
+  </button>
+) : (
+  <div className="flex items-center gap-2">
+    <button
+      onClick={() => navigate('/login')}
+      className="px-4 py-2 rounded-lg font-bold border border-[#3d4c5c] text-white hover:bg-[#1f262e] transition-colors text-sm"
+    >
+      Log In
+    </button>
+
+    <button
+      onClick={() => navigate('/register')}
+      className="px-4 py-2 rounded-lg font-bold transition-all transform hover:scale-105 bg-gradient-to-r from-purple-600 to-teal-600 text-white hover:from-purple-700 hover:to-teal-700 text-sm"
+    >
+      Sign Up
+    </button>
+  </div>
+)}
             </div>
           )}
         </div>
@@ -96,27 +114,60 @@ const HomePage: React.FC<HomePageProps> = ({ upcomingEvents }) => {
             onClick={() => navigate('/browse')}
             className="flex items-center bg-gradient-to-r from-purple-600 to-teal-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-purple-700 hover:to-teal-700 transition-all"
           >
-            View All Trending Events
+            Browse Hosted Events
             <ArrowRight className="ml-2 w-5 h-5" />
           </button>
         </div>
       )}
 
-      {/* Quick Links Section */}
-      <h2 className="text-white text-lg font-bold leading-tight tracking-[-0.015em] px-4 pt-5">Quick Links</h2>
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(158px,1fr))] gap-3 p-4">
+     {/* Quick Links Section */}
+<h2 className="text-white text-lg font-bold leading-tight tracking-[-0.015em] px-4 pt-5">
+  Quick Links
+</h2>
 
-        <div className="flex flex-1 gap-3 rounded-lg border border-[#3d4c5c] bg-[#1f262e] p-4 items-center cursor-pointer" onClick={() => navigate('/my-events')}>
-          <svg className="text-white" width="24" height="24" fill="currentColor" viewBox="0 0 256 256"><path d="M208,64H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40V64H48A16,16,0,0,0,32,80V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V80A16,16,0,0,0,208,64ZM96,40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8V64H96ZM208,208H48V80H208V208Z"></path></svg>
-          <h2 className="text-white text-base font-bold leading-tight">My Events</h2>
-        </div>
-        <div className="flex flex-1 gap-3 rounded-lg border border-[#3d4c5c] bg-[#1f262e] p-4 items-center cursor-pointer" onClick={() => navigate('/past')}>
-          <svg className="text-white" width="24" height="24" fill="currentColor" viewBox="0 0 256 256"><path d="M136,80v43.47l36.12,21.67a8,8,0,0,1-8.24,13.72l-40-24A8,8,0,0,1,120,128V80a8,8,0,0,1,16,0Zm-8-48A95.44,95.44,0,0,0,60.08,60.15C52.81,67.51,46.35,74.59,40,82V64a8,8,0,0,0-16,0v40a8,8,0,0,0,8,8H72a8,8,0,0,0,0-16H49c7.15-8.42,14.27-16.35,22.39-24.57a80,80,0,1,1,1.66,114.75,8,8,0,1,0-11,11.64A96,96,0,1,0,128,32Z"></path></svg>
-          <h2 className="text-white text-base font-bold leading-tight">Past Events</h2>
-        </div>
-      
-      </div>
-      <div className="h-5 bg-[#14191f]"></div>
+<div className="grid grid-cols-[repeat(auto-fit,minmax(158px,1fr))] gap-3 p-4">
+
+  {localStorage.getItem('token') ? (
+    <div
+      className="flex flex-1 gap-3 rounded-lg border border-[#3d4c5c] bg-[#1f262e] p-4 items-center cursor-pointer"
+      onClick={() => navigate('/my-events')}
+    >
+      <svg className="text-white" width="24" height="24" fill="currentColor" viewBox="0 0 256 256">
+        <path d="M208,64H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40V64H48A16,16,0,0,0,32,80V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V80A16,16,0,0,0,208,64ZM96,40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8V64H96ZM208,208H48V80H208V208Z"></path>
+      </svg>
+
+      <h2 className="text-white text-base font-bold leading-tight">
+        My Events
+      </h2>
+    </div>
+  ) : (
+    <div
+      className="flex flex-1 gap-3 rounded-lg border border-[#3d4c5c] bg-[#1f262e] p-4 items-center cursor-pointer"
+      onClick={() => navigate('/register')}
+    >
+      <svg className="text-white" width="24" height="24" fill="currentColor" viewBox="0 0 256 256">
+        <path d="M128 128a40 40 0 1 0-40-40 40 40 0 0 0 40 40Zm0 16c-35.35 0-64 17.91-64 40v8a8 8 0 0 0 16 0v-8c0-13.23 21.49-24 48-24s48 10.77 48 24v8a8 8 0 0 0 16 0v-8c0-22.09-28.65-40-64-40Z"></path>
+      </svg>
+
+      <h2 className="text-white text-base font-bold leading-tight">
+        Join Bloomday
+      </h2>
+    </div>
+  )}
+
+  <div
+    className="flex flex-1 gap-3 rounded-lg border border-[#3d4c5c] bg-[#1f262e] p-4 items-center cursor-pointer"
+    onClick={() => navigate('/past')}
+  >
+    <svg className="text-white" width="24" height="24" fill="currentColor" viewBox="0 0 256 256">
+      <path d="M136,80v43.47l36.12,21.67a8,8,0,0,1-8.24,13.72l-40-24A8,8,0,0,1,120,128V80a8,8,0,0,1,16,0Zm-8-48A95.44,95.44,0,0,0,60.08,60.15C52.81,67.51,46.35,74.59,40,82V64a8,8,0,0,0-16,0v40a8,8,0,0,0,8,8H72a8,8,0,0,0,0-16H49c7.15-8.42,14.27-16.35,22.39-24.57a80,80,0,1,1,1.66,114.75,8,8,0,1,0-11,11.64A96,96,0,1,0,128,32Z"></path>
+    </svg>
+
+    <h2 className="text-white text-base font-bold leading-tight">
+      Past Events
+    </h2>
+  </div>
+</div>
     </div>
   );
 };
