@@ -82,12 +82,6 @@ const BloomdayContainer: React.FC = () => {
       }
     };
 
-    const isAuthPage = location.pathname === '/login' ||
-      location.pathname === '/register' ||
-      location.pathname.startsWith('/reset-password/') ||
-      location.pathname === '/forgot-password' ||
-      location.pathname === '/auth/verify-email' ||
-      location.pathname.startsWith('/invite/');
 
     // Public homepage should always fetch hosted/trending events.
     // This helps visitors see platform activity before login.
