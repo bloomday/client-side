@@ -9,6 +9,7 @@ interface AccountPageProps {
 const AccountPage: React.FC<AccountPageProps> = () => {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const isAdmin = user.role === 'admin' || user.role === 'ADMIN';
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogout = async () => {
@@ -70,6 +71,23 @@ const AccountPage: React.FC<AccountPageProps> = () => {
           Update Details
         </button>
       </div>
+    {/* Admin Controls Section (only visible to admins) */}
+      {isAdmin && (
+  <div className="bg-[#1f262e] rounded-lg shadow-md p-6 mb-6 border border-purple-500/30">
+    <p className="text-sm text-purple-300 font-semibold mb-2">Admin Controls</p>
+    <h2 className="text-2xl font-bold mb-3">Platform Management</h2>
+    <p className="text-[#9dadbe] mb-4">
+      View registered users, monitor platform adoption, and manage Bloomday operational evidence.
+    </p>
+
+    <button
+      className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-teal-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-purple-700 hover:to-teal-700 transition-all"
+      onClick={() => navigate('/admin/users')}
+    >
+      View Registered Users
+    </button>
+  </div>
+)}
 
       {/* Notifications Section */}
       <div className="bg-[#1f262e] rounded-lg shadow-md p-6 mb-6">

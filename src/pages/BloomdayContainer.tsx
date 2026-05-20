@@ -19,6 +19,7 @@ import { useLocation, Routes, Route, useNavigate, useParams } from 'react-router
 import InvitationResponsePage from './InvitationResponsePage';
 import EventGalleryPage from './EventGalleryPage';
 import PaymentSuccessPage from './PaymentSuccessPage'; // Import the new PaymentSuccessPage
+import AdminUsersPage from './AdminUsersPage';
 
 interface DateRange {
   start: string;
@@ -125,6 +126,7 @@ const BloomdayContainer: React.FC = () => {
         <Route path="/events/:eventId/gallery-full" element={<EventGalleryPage />} />
         <Route path="/payment-success" element={<PaymentSuccessPage />} /> {/* New route for payment success */}
         <Route path="*" element={<LoginPage />} />
+        <Route path="/admin/users" element={<AdminUsersPage />} />
       </Routes>
     );
   };
@@ -151,7 +153,7 @@ const BloomdayContainer: React.FC = () => {
           return;
         }
         try {
-          const response = await apiCall<{ event: Event, totalAmount: number }>(`/event/${id}/details`, 'GET', undefined, true);
+          const response = await apiCall<{ event: Event, totalAmount: number }>(`/event/${id}/details`, 'GET', undefined, false);
           if (response.success && response.data) {
             console.log("Event details fetched successfully:", response.data);
             setEvent(response.data.event);
