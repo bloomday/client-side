@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import FlashMessage from '../components/FlashMessage';
 import { useNavigate } from 'react-router-dom';
 import { apiCall } from '../utils/api';
+import { X } from 'lucide-react';
 
 interface CreateEventPageProps {
   eventTypes: string[];
@@ -103,8 +104,28 @@ const CreateEventPage: React.FC<CreateEventPageProps> = ({ eventTypes }) => {
   const buttonClasses = `w-full bg-gradient-to-r from-purple-600 to-teal-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-purple-700 hover:to-teal-700 transition-all transform hover:scale-105`;
 
   return (
+    
+
     <div className="min-h-screen bg-[#14191f] py-8 px-4">
       <div className="max-w-2xl mx-auto">
+        <div className="flex items-center justify-between mb-6">
+  <button
+    type="button"
+    onClick={() => navigate(-1)}
+    className="text-[#9dadbe] hover:text-white transition-colors text-sm font-semibold"
+  >
+    ← Back
+  </button>
+
+  <button
+    type="button"
+    onClick={() => navigate('/')}
+    className="text-[#9dadbe] hover:text-white transition-colors"
+    aria-label="Cancel event creation"
+  >
+    <X size={22} />
+  </button>
+</div>
         <div className="bg-[#1f262e] rounded-lg shadow-md p-6">
           <h1 className="text-lg font-bold text-white mb-8 text-center">Create a New Event</h1>
           <form onSubmit={handleSubmit} className="space-y-6">
