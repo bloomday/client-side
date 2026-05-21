@@ -37,8 +37,7 @@ const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event /*, fromMyEve
   const eventStarted = event && new Date(event.date) < new Date();
 
 
-  const fetchAttendeeCount = async () => {
-    if (!event?._id) return;
+const fetchAttendeeCount = React.useCallback(async () => {    if (!event?._id) return;
 
     setAttendeesLoading(true);
     setAttendeesError('');
@@ -58,7 +57,7 @@ const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event /*, fromMyEve
     }
 
     setAttendeesLoading(false);
-  };
+  }, [event?._id]);
 
   useEffect(() => {
     fetchAttendeeCount();
@@ -84,7 +83,7 @@ const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event /*, fromMyEve
           console.error('Failed to fetch event gallery:', response.message);
           setFlashMessage(response.message || 'An error occurred, please try again later.');
           setFlashMessageType('error');
-        }
+        } 
       } catch (error: any) {
         console.error('Error fetching event gallery:', error);
         setFlashMessage(error.message || 'An error occurred, please try again later.');
@@ -93,7 +92,7 @@ const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event /*, fromMyEve
     };
 
     fetchEventGallery();
-  }, [event, userId, eventStarted]);
+  }, [event, userId, eventStarted, fetchAttendeeCount]);
 
   const handleCloseFlash = () => {
     setFlashMessage(null);
