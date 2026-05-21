@@ -24,6 +24,10 @@ const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event /*, fromMyEve
   const [giftAmount, setGiftAmount] = useState('');
   const [giftMessage, setGiftMessage] = useState('');
   const [showGiftForm, setShowGiftForm] = useState(false);
+  // States for attendees count and loading/error states
+  const [totalAttendees, setTotalAttendees] = useState(0);
+  const [attendeesLoading, setAttendeesLoading] = useState(false);
+  const [attendeesError, setAttendeesError] = useState('');
 
   console.log('EventDetailsPage - event prop:', event);
 
@@ -32,7 +36,32 @@ const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event /*, fromMyEve
   const isCurrentUserAttendee = userId && event && (event.invitees || []).includes(userId);
   const eventStarted = event && new Date(event.date) < new Date();
 
+
+const fetchAttendeeCount = React.useCallback(async () => {    if (!event?._id) return;
+
+    setAttendeesLoading(true);
+    setAttendeesError('');
+
+    const response = await apiCall<{ totalAttendees: number; attendees: any[] }>(
+      `/events/${event._id}/attendees`,
+      'GET',
+      undefined,
+      false
+    );
+
+    if (response.success && response.data) {
+      setTotalAttendees(response.data.totalAttendees || 0);
+    } else {
+      setTotalAttendees(0);
+      setAttendeesError(response.message || 'Unable to load attendees');
+    }
+
+    setAttendeesLoading(false);
+  }, [event?._id]);
+
   useEffect(() => {
+    fetchAttendeeCount();
+
     if (userId && event?.hosts && (event.hosts || []).some(host => host._id === userId)) {
       setIsCurrentUserHost(true);
     } else {
@@ -54,7 +83,7 @@ const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event /*, fromMyEve
           console.error('Failed to fetch event gallery:', response.message);
           setFlashMessage(response.message || 'An error occurred, please try again later.');
           setFlashMessageType('error');
-        }
+        } 
       } catch (error: any) {
         console.error('Error fetching event gallery:', error);
         setFlashMessage(error.message || 'An error occurred, please try again later.');
@@ -63,7 +92,7 @@ const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event /*, fromMyEve
     };
 
     fetchEventGallery();
-  }, [event, userId, eventStarted]);
+  }, [event, userId, eventStarted, fetchAttendeeCount]);
 
   const handleCloseFlash = () => {
     setFlashMessage(null);
@@ -217,8 +246,8 @@ const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event /*, fromMyEve
   return (
     <div className="min-h-screen bg-[#14191f]">
       <div className="relative h-64 md:h-96">
-        <img 
-          src={event.ivImage || 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1200&h=400&fit=crop'} 
+        <img
+          src={event.ivImage || 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1200&h=400&fit=crop'}
           alt={event.name}
           className="w-full h-full object-cover"
         />
@@ -237,16 +266,30 @@ const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event /*, fromMyEve
               <p className="text-gray-700 leading-relaxed">{event.description}</p>
             </div>
             <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-2xl font-bold text-gray-800 mb-4">Attendees ({(event.invitees || []).length})</h2>
-              <div className="flex flex-wrap gap-2">
-                {[...Array(Math.min((event.invitees || []).length, 20))].map((_, i) => (
-                  <div key={i} className="w-10 h-10 bg-gradient-to-r from-purple-400 to-teal-400 rounded-full flex items-center justify-center text-white font-semibold">
-                    {String.fromCharCode(65 + (i % 26))}
-                  </div>
+              <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                Attendees (
+                {attendeesLoading
+                  ? 'Loading...'
+                  : attendeesError
+                    ? '0'
+                    : totalAttendees}
+                )
+              </h2>
+
+              {attendeesLoading && (
+                <p className="text-gray-500 mb-4">Loading attendees...</p>
+              )}
+
+              {attendeesError && !attendeesLoading && (
+                <p className="text-gray-500 mb-4">Unable to load attendees</p>
+              )}              <div className="flex flex-wrap gap-2">
+                {[...Array(Math.min(totalAttendees, 20))].map((_, i) => (<div key={i} className="w-10 h-10 bg-gradient-to-r from-purple-400 to-teal-400 rounded-full flex items-center justify-center text-white font-semibold">
+                  {String.fromCharCode(65 + (i % 26))}
+                </div>
                 ))}
-                {((event.invitees || []).length) > 20 && (
+                {totalAttendees > 20 && (
                   <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center text-gray-600 font-semibold">
-                    +{((event.invitees || []).length) - 20}
+                    +{totalAttendees - 20}
                   </div>
                 )}
               </div>
@@ -284,14 +327,14 @@ const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event /*, fromMyEve
                 <h2 className="text-2xl font-bold text-gray-800 mb-4">Event QR Code</h2>
                 <div className="flex flex-col items-center">
                   <img src={event.qrCode} alt="Event QR Code" className="w-48 h-48 object-contain mb-4" />
-                  <button 
+                  <button
                     onClick={() => navigator.clipboard.writeText(event.eventUrl)}
                     className="w-full bg-gradient-to-r from-purple-600 to-teal-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-purple-700 hover:to-teal-700 transition-all"
                   >
                     Copy Event Link
                   </button>
                   {navigator.share && (
-                    <button 
+                    <button
                       onClick={async () => {
                         try {
                           await navigator.share({ title: event.name, url: event.eventUrl });
@@ -314,7 +357,7 @@ const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event /*, fromMyEve
             )}
 
             {/* Image Upload Section */}
-            { isCurrentUserAttendee && eventStarted && (
+            {isCurrentUserAttendee && eventStarted && (
               <div className="bg-white rounded-lg shadow-md p-6 mt-6">
                 <h2 className="text-2xl font-bold text-gray-800 mb-4">Upload Event Images</h2>
                 <div
@@ -375,8 +418,8 @@ const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event /*, fromMyEve
               <div className="bg-white rounded-lg shadow-md p-6 mt-6">
                 <h2 className="text-2xl font-bold text-gray-800 mb-4">Event Gallery</h2>
                 <p className="text-gray-700 mb-4">This event has {eventGalleryImages.length} images in its gallery.</p>
-                <Link 
-                  to={`/events/${event._id}/gallery-full`} 
+                <Link
+                  to={`/events/${event._id}/gallery-full`}
                   className="w-full bg-gradient-to-r from-purple-600 to-teal-600 text-white py-3 px-6 rounded-lg font-semibold text-center block hover:from-purple-700 hover:to-teal-700 transition-all"
                 >
                   View All Images
@@ -391,7 +434,7 @@ const EventDetailsPage: React.FC<EventDetailsPageProps> = ({ event /*, fromMyEve
                   onClick={() => setShowGiftForm(true)}
                   className="w-full bg-gradient-to-r from-purple-600 to-teal-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-purple-700 hover:to-teal-700 transition-all flex items-center justify-center space-x-2"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="url(#animatedGradient)" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-gift"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13H7a2 2 0 0 1-2-2V8z"/><path d="M7 8h10v4"/><path d="M17 8v13h-5"/><path d="M22 12v-4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v4"/><path d="M12 22v-4"/><path d="M4 12h16"/></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="url(#animatedGradient)" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-gift"><rect x="3" y="8" width="18" height="4" rx="1" /><path d="M12 8v13H7a2 2 0 0 1-2-2V8z" /><path d="M7 8h10v4" /><path d="M17 8v13h-5" /><path d="M22 12v-4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v4" /><path d="M12 22v-4" /><path d="M4 12h16" /></svg>
                   <span>Gift a Bloom</span>
                 </button>
               ) : (
