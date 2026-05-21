@@ -245,7 +245,7 @@ const HomePage: React.FC<HomePageProps> = ({ upcomingEvents }) => {
           </div>
 
           <div className="rounded-xl border border-[#3d4c5c] bg-[#1f262e] p-4 text-center">
-            <p className="text-2xl font-bold text-white">2</p>
+            <p className="text-2xl font-bold text-white">3</p>
             <p className="text-xs text-[#9dadbe] mt-1">
               Successfully Hosted Events
             </p>
