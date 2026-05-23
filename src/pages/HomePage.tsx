@@ -3,9 +3,22 @@ import useEmblaCarousel from 'embla-carousel-react';
 import { Event } from '../types/index';
 import { ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { apiCall } from '../utils/api';
 
 interface HomePageProps {
   upcomingEvents: Event[];
+}
+
+interface PlatformStats {
+  totalUsers: number;
+  totalHostedEvents: number;
+  platformStatus: string;
+}
+
+interface PlatformStatsResponse {
+  success: boolean;
+  message: string;
+  data: PlatformStats;
 }
 
 const HomePage: React.FC<HomePageProps> = ({ upcomingEvents }) => {
@@ -13,12 +26,56 @@ const HomePage: React.FC<HomePageProps> = ({ upcomingEvents }) => {
   const userId = localStorage.getItem('userId');
   const isLoggedIn = Boolean(localStorage.getItem('token'));
 
+  const [platformStats, setPlatformStats] = React.useState<PlatformStats>({
+    totalUsers: 0,
+    totalHostedEvents: 0,
+    platformStatus: 'Growing Event Platform',
+  });
+
+  const [statsLoading, setStatsLoading] = React.useState(true);
+  const [statsError, setStatsError] = React.useState('');
+
   const [emblaRef] = useEmblaCarousel({
     loop: true,
     align: 'start',
     slidesToScroll: 1,
     containScroll: 'keepSnaps',
   });
+
+  React.useEffect(() => {
+    const fetchPlatformStats = async () => {
+      setStatsLoading(true);
+      setStatsError('');
+
+      try {
+        const response = await apiCall<PlatformStatsResponse>(
+          '/platform/stats',
+          'GET',
+          undefined,
+          false
+        );
+
+        if (response.success && response.data?.data) {
+          setPlatformStats(response.data.data);
+        } else {
+          setStatsError(response.message || 'Unable to load platform stats.');
+        }
+      } catch (error) {
+        console.error('Failed to fetch platform stats:', error);
+        setStatsError('Unable to load platform stats.');
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+
+    fetchPlatformStats();
+  }, []);
+
+  const renderStatValue = (value: number | string) => {
+    if (statsLoading) return '...';
+    if (statsError && typeof value === 'number') return '0';
+    return value;
+  };
 
   return (
     <div className="min-h-screen bg-[#14191f] flex flex-col justify-between w-full max-w-7xl mx-auto px-4 md:px-8 lg:px-12">
@@ -238,14 +295,24 @@ const HomePage: React.FC<HomePageProps> = ({ upcomingEvents }) => {
 
       {/* Community Stats Section */}
       <div className="px-4 pt-4">
+        {statsError && (
+          <p className="text-xs text-[#9dadbe] mb-2">
+            Unable to load live platform stats. Showing fallback values.
+          </p>
+        )}
+
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div className="rounded-xl border border-[#3d4c5c] bg-[#1f262e] p-4 text-center">
-            <p className="text-2xl font-bold text-white">52</p>
+            <p className="text-2xl font-bold text-white">
+              {renderStatValue(platformStats.totalUsers)}
+            </p>
             <p className="text-xs text-[#9dadbe] mt-1">Community Members</p>
           </div>
 
           <div className="rounded-xl border border-[#3d4c5c] bg-[#1f262e] p-4 text-center">
-            <p className="text-2xl font-bold text-white">3</p>
+            <p className="text-2xl font-bold text-white">
+              {renderStatValue(platformStats.totalHostedEvents)}
+            </p>
             <p className="text-xs text-[#9dadbe] mt-1">
               Successfully Hosted Events
             </p>
@@ -254,7 +321,7 @@ const HomePage: React.FC<HomePageProps> = ({ upcomingEvents }) => {
           <div className="rounded-xl border border-[#3d4c5c] bg-[#1f262e] p-4 text-center">
             <p className="text-2xl font-bold text-white">1</p>
             <p className="text-xs text-[#9dadbe] mt-1">
-              Growing Event Platform
+              {statsLoading ? 'Loading Platform Status...' : platformStats.platformStatus}
             </p>
           </div>
         </div>
